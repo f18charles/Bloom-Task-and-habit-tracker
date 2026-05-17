@@ -1,0 +1,6 @@
+{
+  "name": "Bloom - Task & Habit Tracker",
+  "description": "A gamified productivity app with task management, habit tracking, and progress analytics.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": []
+}

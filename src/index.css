@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-bloom-pink-light: #fce7f3;
+  --color-bloom-pink: #f9a8c9;
+  --color-bloom-green-light: #dcfce7;
+  --color-bloom-green: #86efac;
+  --color-bloom-dark-green: #166534;
+  --color-bloom-purple: #c026d3;
+  --color-bloom-bg: #fdf2f8;
+}
+
+@layer base {
+  body {
+    @apply bg-bloom-bg text-[#4a4a4a] font-sans;
+  }
+}
+
+.bloom-card {
+  @apply bg-white rounded-[2rem] shadow-sm border border-[#fce7f3] overflow-hidden transition-all duration-300;
+}
+
+.bloom-btn-primary {
+  @apply px-6 py-2.5 bg-bloom-pink text-white font-medium rounded-2xl hover:brightness-95 active:scale-95 transition-all;
+}
+
+.bloom-btn-secondary {
+  @apply px-6 py-2.5 bg-bloom-green text-slate-800 font-medium rounded-2xl hover:brightness-95 active:scale-95 transition-all;
+}
+

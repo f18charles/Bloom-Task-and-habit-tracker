@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  points       Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  tasks        Task[]
+  habits       Habit[]
+  badges       Badge[]
+  googleToken  GoogleToken?
+}
+
+model Task {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  title          String
+  description    String?
+  status         String    @default("TODO") // TODO, IN_PROGRESS, DONE
+  priority       String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  dueDate        DateTime?
+  reminderAt     DateTime?
+  isRecurring    Boolean   @default(false)
+  recurrenceRule String?
+  points         Int       @default(10)
+  createdAt      DateTime  @default(now())
+  googleEventId  String?
+
+  subtasks       Subtask[]
+}
+
+model Subtask {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  title       String
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model GoogleToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  lastSyncedAt DateTime?
+}
+
+model Habit {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  title        String
+  frequency    String    @default("DAILY") // DAILY, WEEKLY
+  reminderTime String?
+  points       Int       @default(5)
+  createdAt    DateTime  @default(now())
+
+  logs HabitLog[]
+}
+
+model HabitLog {
+  id          String   @id @default(cuid())
+  habitId     String
+  habit       Habit    @relation(fields: [habitId], references: [id])
+  completedAt DateTime @default(now())
+}
+
+model Badge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  type     String // e.g., "7_DAY_STREAK", "50_TASKS"
+  earnedAt DateTime @default(now())
+}
