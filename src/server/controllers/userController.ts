@@ -26,16 +26,38 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       take: 5
     });
 
-    // Points over time (simplified)
-    const pointsHistory = [
-      { name: 'Mon', points: 20 },
-      { name: 'Tue', points: 45 },
-      { name: 'Wed', points: 30 },
-      { name: 'Thu', points: 60 },
-      { name: 'Fri', points: 80 },
-      { name: 'Sat', points: 50 },
-      { name: 'Sun', points: 90 },
-    ];
+    // Points history for the last 7 days
+    const pointsHistory = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const start = startOfDay(date);
+      const end = new Date(start);
+      end.setHours(23, 59, 59, 999);
+
+      const taskPoints = await prisma.task.aggregate({
+        where: {
+          userId,
+          completedAt: { gte: start, lte: end }
+        },
+        _sum: { points: true }
+      });
+
+      const habitPoints = await prisma.habitLog.findMany({
+        where: {
+          habit: { userId },
+          completedAt: { gte: start, lte: end }
+        },
+        include: { habit: true }
+      });
+
+      const totalHabitPoints = habitPoints.reduce((sum, log) => sum + (log.habit.points || 0), 0);
+      const totalPoints = (taskPoints._sum.points || 0) + totalHabitPoints;
+
+      pointsHistory.push({
+        name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        points: totalPoints
+      });
+    }
 
     res.json({
       data: {

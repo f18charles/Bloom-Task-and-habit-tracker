@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTaskStore } from "../store/useTaskStore.ts";
 import { useAuthStore } from "../store/useAuthStore.ts";
+import { useHabitStore } from "../store/useHabitStore.ts";
 import { 
   CheckCircle2, 
   Plus,
@@ -17,6 +18,7 @@ import { calculateLevel, getLevelProgress, getPointsForLevel } from "../lib/leve
 export default function Dashboard() {
   const { tasks, fetchTasks } = useTaskStore();
   const { user } = useAuthStore();
+  const { habits, fetchHabits, logHabit } = useHabitStore();
   const [stats, setStats] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -30,8 +32,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchTasks();
+    fetchHabits();
     api.get("/users/stats").then(res => setStats(res.data.data));
-  }, [fetchTasks]);
+  }, [fetchTasks, fetchHabits]);
 
   const filteredTasks = tasks
     .filter(t => t.status !== "DONE")
@@ -106,14 +109,35 @@ export default function Dashboard() {
               </div>
               <Zap className="w-6 h-6 text-bloom-dark-green opacity-40" />
            </div>
-           <div className="flex items-end gap-2 h-12 mt-2">
-             <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-12"></div>
-             <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-6"></div>
-             <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-16"></div>
-             <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-8"></div>
-             <div className="flex-1 bg-bloom-dark-green rounded-t-lg h-14"></div>
-             <div className="flex-1 bg-bloom-dark-green/20 rounded-t-lg h-10"></div>
-             <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-12"></div>
+           <div className="flex items-end gap-2 h-16 mt-2">
+             {stats?.pointsHistory ? (
+               stats.pointsHistory.map((day: any, i: number) => {
+                 const maxPoints = Math.max(...stats.pointsHistory.map((d: any) => d.points), 10);
+                 const height = (day.points / maxPoints) * 100;
+                 return (
+                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                     <div 
+                       className={cn(
+                         "w-full rounded-t-lg transition-all duration-500",
+                         i === 6 ? "bg-bloom-dark-green" : "bg-bloom-dark-green/20"
+                       )}
+                       style={{ height: `${Math.max(height, 5)}%` }}
+                     ></div>
+                     <span className="text-[8px] font-bold opacity-40">{day.name[0]}</span>
+                   </div>
+                 );
+               })
+             ) : (
+                <>
+                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-12"></div>
+                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-6"></div>
+                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-16"></div>
+                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-8"></div>
+                  <div className="flex-1 bg-bloom-dark-green rounded-t-lg h-14"></div>
+                  <div className="flex-1 bg-bloom-dark-green/20 rounded-t-lg h-10"></div>
+                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-12"></div>
+                </>
+             )}
            </div>
          </div>
       </div>
@@ -127,23 +151,39 @@ export default function Dashboard() {
               <span className="text-xs text-bloom-green font-bold px-2 py-1 bg-bloom-green-light rounded-lg">+50 pts</span>
             </div>
             <div className="space-y-4">
-              {/* This would normally be dynamic, highlighting few habits */}
-              <div className="flex items-center justify-between p-3 bg-bloom-bg rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-bloom-pink rounded-md bg-white flex items-center justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-bloom-pink" />
+              {habits.slice(0, 3).map((habit) => {
+                const isLoggedToday = habit.logs?.some(l => 
+                  new Date(l.completedAt).toDateString() === new Date().toDateString()
+                );
+                return (
+                  <div key={habit.id} className="flex items-center justify-between p-3 bg-bloom-bg rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => !isLoggedToday && logHabit(habit.id)}
+                        disabled={isLoggedToday}
+                        className={cn(
+                          "w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all",
+                          isLoggedToday 
+                            ? "bg-bloom-pink border-bloom-pink" 
+                            : "border-bloom-pink bg-white hover:bg-bloom-pink/10"
+                        )}
+                      >
+                        {isLoggedToday && <CheckCircle2 className="w-4 h-4 text-white" />}
+                      </button>
+                      <span className={cn(
+                        "text-sm font-medium",
+                        isLoggedToday && "text-slate-400 line-through"
+                      )}>{habit.title}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      {isLoggedToday ? "Done" : `+${habit.points}`}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium">Morning Yoga</span>
-                </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Done</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-bloom-bg rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-bloom-pink rounded-md bg-white" />
-                  <span className="text-sm font-medium">Read 20 Pages</span>
-                </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">0/20</span>
-              </div>
+                );
+              })}
+              {habits.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-4 italic">No habits set yet blooming!</p>
+              )}
             </div>
           </section>
 

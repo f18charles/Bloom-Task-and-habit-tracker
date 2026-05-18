@@ -35,6 +35,7 @@ model Task {
   recurrenceRule String?
   points         Int       @default(10)
   createdAt      DateTime  @default(now())
+  completedAt    DateTime?
   googleEventId  String?
 
   subtasks       Subtask[]

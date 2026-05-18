@@ -63,6 +63,7 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
 
     const wasDone = existingTask.status === "DONE";
     const isDone = status === "DONE";
+    const completedAt = !wasDone && isDone ? new Date() : (wasDone && !isDone ? null : existingTask.completedAt);
 
     // Subtask sync: simple clear and recreate for consistency if IDs not provided
     // Better: Upsert if ID exists, else create. But for MVP let's do simple.
@@ -75,6 +76,7 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
         priority,
         dueDate: dueDate ? new Date(dueDate) : null,
         points,
+        completedAt,
         subtasks: subtasks ? {
           deleteMany: {},
           create: subtasks.map((s: any) => ({
