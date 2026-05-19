@@ -10,6 +10,7 @@ import Settings from "./pages/Settings.tsx";
 import AuthPage from "./pages/Auth.tsx";
 import { useAuthStore } from "./store/useAuthStore.ts";
 import { useNotifications } from "./hooks/useNotifications.ts";
+import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
@@ -17,7 +18,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isLoading) return null;
   if (!user) return <Navigate to="/auth" />;
   
-  return <Layout>{children}</Layout>;
+  return (
+    <ErrorBoundary>
+      <Layout>{children}</Layout>
+    </ErrorBoundary>
+  );
 }
 
 export default function App() {

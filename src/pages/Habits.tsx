@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import { cn } from "../lib/utils.ts";
 
 export default function Habits() {
-  const { habits, fetchHabits, addHabit, logHabit, deleteHabit } = useHabitStore();
+  const { habits, fetchHabits, addHabit, logHabit, deleteHabit, isLoading } = useHabitStore();
   const [showAdd, setShowAdd] = useState(false);
   const [newHabit, setNewHabit] = useState({ title: "", frequency: "DAILY" as const, points: 5 });
 
@@ -152,7 +152,12 @@ export default function Habits() {
       </AnimatePresence>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {habits.map((habit) => {
+        {isLoading ? (
+          <>
+            <div className="h-64 bg-slate-50 rounded-[2.5rem] animate-pulse"></div>
+            <div className="h-64 bg-slate-50 rounded-[2.5rem] animate-pulse"></div>
+          </>
+        ) : habits.map((habit) => {
           const completed = isCompletedToday(habit);
           const streak = calculateStreak(habit);
           return (
@@ -189,7 +194,7 @@ export default function Habits() {
                     {habit.title}
                   </h4>
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
+                    <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-transparent">
                       <CalendarDays className="w-3 h-3" /> {habit.frequency}
                     </span>
                     <span className={cn(
@@ -234,7 +239,7 @@ export default function Habits() {
           );
         })}
 
-        {habits.length === 0 && !showAdd && (
+        {habits.length === 0 && !showAdd && !isLoading && (
           <div className="md:col-span-2 py-20 text-center bg-white/40 rounded-[4rem] border-4 border-dashed border-white/60">
              <div className="w-24 h-24 bg-white rounded-full grid place-items-center mx-auto mb-6 shadow-xl shadow-bloom-pink/10">
                 <Target className="w-10 h-10 text-bloom-pink" />

@@ -2,6 +2,7 @@ import { Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 import { AuthRequest } from "../middleware/auth.ts";
 import { subDays, startOfDay } from "date-fns";
+import { Parser } from "json2csv";
 
 export const getStats = async (req: AuthRequest, res: Response) => {
   try {
@@ -71,5 +72,44 @@ export const getStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch stats" });
+  }
+};
+
+export const exportUserData = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const tasks = await prisma.task.findMany({ where: { userId } });
+    const habits = await prisma.habit.findMany({ where: { userId } });
+    
+    const combinedData = tasks.map(t => ({
+      type: "TASK",
+      id: t.id,
+      title: t.title,
+      status: t.status,
+      priority: t.priority,
+      createdAt: t.createdAt
+    })).concat(habits.map(h => ({
+      type: "HABIT",
+      id: h.id,
+      title: h.title,
+      status: "N/A",
+      priority: "N/A",
+      createdAt: h.createdAt
+    })));
+
+    if (combinedData.length === 0) {
+      return res.status(404).json({ error: "No data to export" });
+    }
+
+    const fields = ['type', 'id', 'title', 'status', 'priority', 'createdAt'];
+    const parser = new Parser({ fields });
+    const csv = parser.parse(combinedData);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=bloom_export.csv');
+    res.status(200).send(csv);
+  } catch (error) {
+    console.error("Export error:", error);
+    res.status(500).json({ error: "Failed to export data" });
   }
 };

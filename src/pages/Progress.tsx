@@ -40,7 +40,7 @@ export default function Progress() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bloom-card p-8 lg:col-span-2"
+        className="bloom-card p-6 sm:p-8 lg:col-span-2"
       >
         <h3 className="text-xl font-bold text-slate-800 mb-8">Points Earned Weekly</h3>
         <div className="h-[300px]">
@@ -76,7 +76,7 @@ export default function Progress() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="bloom-card p-8"
+        className="bloom-card p-6 sm:p-8"
       >
         <h3 className="text-xl font-bold text-slate-800 mb-8">Tasks Completed</h3>
         <div className="h-[250px]">
@@ -91,8 +91,8 @@ export default function Progress() {
                 dataKey="count" 
                 stroke="#86efac" 
                 strokeWidth={4} 
-                dot={{ fill: '#86efac', strokeWidth: 2, r: 6 }} 
-                activeDot={{ r: 8 }}
+                dot={{ fill: '#86efac', strokeWidth: 2, r: 4 }} 
+                activeDot={{ r: 6 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -104,7 +104,7 @@ export default function Progress() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="bloom-card p-8"
+        className="bloom-card p-6 sm:p-8"
       >
         <h3 className="text-xl font-bold text-slate-800 mb-8">Habit Consistency</h3>
         <div className="h-[250px]">

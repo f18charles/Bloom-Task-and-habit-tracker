@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { 
   DndContext, 
   closestCenter, 
+  TouchSensor, 
   KeyboardSensor, 
   PointerSensor, 
   useSensor, 
@@ -24,6 +25,7 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import { motion } from "motion/react";
 import { cn } from "../lib/utils.ts";
 import TaskModal from "../components/TaskModal.tsx";
+import { TaskSkeleton } from "../components/Skeleton.tsx";
 
 function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
   const { deleteTask } = useTaskStore();
@@ -87,7 +89,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
                 </div>
               </div>
             )}
-
+ 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className={cn(
@@ -132,7 +134,7 @@ const COLUMNS = [
 ];
 
 export default function Kanban() {
-  const { tasks, fetchTasks, updateTask } = useTaskStore();
+  const { tasks, fetchTasks, updateTask, isLoading } = useTaskStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [defaultStatus, setDefaultStatus] = useState("TODO");
@@ -143,6 +145,12 @@ export default function Kanban() {
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -260,6 +268,7 @@ export default function Kanban() {
               tasks={filteredTasks.filter(t => t.status === col.id)}
               openAddModal={openAddModal}
               onTaskClick={openEditModal}
+              isLoading={isLoading}
             />
           ))}
         </div>
@@ -268,14 +277,14 @@ export default function Kanban() {
   );
 }
 
-function KanbanColumn({ col, tasks, openAddModal, onTaskClick }: any) {
+function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any) {
   const { setNodeRef } = useDroppable({ id: col.id });
 
   return (
-    <div className="flex-1 flex flex-col gap-4 min-w-[320px]">
+    <div className="flex-1 flex flex-col gap-4 min-w-[300px] md:min-w-[320px]">
       <div className="flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className={cn("w-3 h-3 rounded-full", col.color)} />
+          <div className={cn("w-3 h-3 rounded-full shadow-sm", col.color)} />
           <h3 className="font-black text-slate-400 uppercase tracking-[0.2em] text-[10px]">
             {col.title}
           </h3>
@@ -288,21 +297,28 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick }: any) {
           <Plus className="w-4 h-4" />
         </button>
       </div>
-
+ 
       <div 
         ref={setNodeRef}
         className="flex-1 bg-bloom-bg/30 border-2 border-white rounded-[2.5rem] p-6 space-y-4 overflow-y-auto"
       >
-        <SortableContext 
-          items={tasks.map((t: any) => t.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {tasks.map((task: any) => (
-            <SortableTask key={task.id} task={task} onClick={() => onTaskClick(task)} />
-          ))}
-        </SortableContext>
-
-        {tasks.length === 0 && (
+        {isLoading ? (
+          <>
+            <TaskSkeleton />
+            <TaskSkeleton />
+          </>
+        ) : (
+          <SortableContext 
+            items={tasks.map((t: any) => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {tasks.map((task: any) => (
+              <SortableTask key={task.id} task={task} onClick={() => onTaskClick(task)} />
+            ))}
+          </SortableContext>
+        )}
+ 
+        {!isLoading && tasks.length === 0 && (
           <div className="h-32 border-2 border-dashed border-slate-100 rounded-[2rem] flex flex-col items-center justify-center gap-2 group hover:border-bloom-pink/20 transition-colors cursor-pointer" onClick={() => openAddModal(col.id)}>
             <p className="text-[10px] font-black text-slate-200 uppercase tracking-widest group-hover:text-bloom-pink/40">Drop items here</p>
           </div>

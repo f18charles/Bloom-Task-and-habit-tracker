@@ -10,7 +10,9 @@ import {
   LogOut,
   Flower,
   Flame,
-  Award
+  Award,
+  Sun,
+  Moon
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore.ts";
 import { clsx, type ClassValue } from "clsx";
@@ -51,9 +53,9 @@ export default function Layout({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-screen bg-bloom-bg">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white/60 border-r border-bloom-pink/30 flex flex-col fixed h-full backdrop-blur-md">
+    <div className="flex min-h-screen bg-bloom-bg transition-colors">
+      {/* Sidebar - Desktop Only */}
+      <aside className="w-64 bg-white/60 border-r border-bloom-pink/30 flex flex-col fixed h-full backdrop-blur-md hidden lg:flex z-50">
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-bloom-green rounded-xl grid place-items-center shadow-sm">
             <Flower className="text-bloom-dark-green w-6 h-6" />
@@ -63,7 +65,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </span>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
@@ -107,30 +109,68 @@ export default function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 lg:ml-64 p-4 md:p-8 pb-24 lg:pb-8">
         {/* Top Navbar */}
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Welcome back, {user.displayName}! 👋
-            </h1>
-            <p className="text-slate-500">You're on a roll today.</p>
+        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div className="lg:hidden w-10 h-10 bg-bloom-green rounded-xl flex items-center justify-center shadow-sm">
+               <Flower className="text-bloom-dark-green w-6 h-6" />
+            </div>
+            <div className="flex flex-col items-start md:items-start ml-3 md:ml-0">
+              <h1 className="text-xl md:text-2xl font-bold text-slate-800">
+                Hi, {user.displayName}! 🌸
+              </h1>
+              <p className="text-xs md:text-sm text-slate-500">You're blooming today.</p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-white">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <span className="font-bold text-slate-700">5 day streak</span>
+          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+            <div className="flex items-center gap-2 bg-white px-3 md:px-4 py-2 rounded-2xl shadow-sm border border-white whitespace-nowrap">
+              <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
+              <span className="font-bold text-slate-700 text-xs md:text-sm">5 day streak</span>
             </div>
-            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-white">
-              <Award className="w-5 h-5 text-yellow-500" />
-              <span className="font-bold text-bloom-pink">{user.points} pts</span>
+            <div className="flex items-center gap-2 bg-white px-3 md:px-4 py-2 rounded-2xl shadow-sm border border-white whitespace-nowrap">
+              <Award className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+              <span className="font-bold text-bloom-pink text-xs md:text-sm">{user.points} pts</span>
             </div>
           </div>
         </header>
 
-        {children}
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-white/80 backdrop-blur-lg border-t border-bloom-pink/10 px-2 py-3 flex justify-around items-center z-50">
+        {navItems.slice(0, 5).map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex flex-col items-center gap-1 p-2 rounded-xl transition-all",
+                isActive ? "text-bloom-pink bg-bloom-pink/5" : "text-slate-400"
+              )}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-bold">{item.name}</span>
+            </Link>
+          );
+        })}
+        <Link
+          to="/settings"
+          className={cn(
+            "flex flex-col items-center gap-1 p-2 rounded-xl transition-all",
+            location.pathname === "/settings" ? "text-bloom-pink bg-bloom-pink/5" : "text-slate-400"
+          )}
+        >
+          <SettingsIcon className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Settings</span>
+        </Link>
+      </nav>
     </div>
   );
 }
