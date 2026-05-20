@@ -2,13 +2,13 @@ import { cn } from "../lib/utils.ts";
 
 export function Skeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("animate-pulse bg-slate-200 dark:bg-slate-700 rounded-lg", className)} />
+    <div className={cn("animate-pulse bg-slate-200 rounded-lg", className)} />
   );
 }
 
 export function TaskSkeleton() {
   return (
-    <div className="p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 space-y-3">
+    <div className="p-5 border border-slate-100 rounded-2xl bg-white space-y-3">
       <div className="flex justify-between">
         <Skeleton className="h-4 w-12" />
         <Skeleton className="h-4 w-16" />

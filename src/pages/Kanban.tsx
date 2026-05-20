@@ -220,36 +220,43 @@ export default function Kanban() {
         task={selectedTask}
         defaultStatus={defaultStatus}
       />
-      <div className="flex flex-col md:flex-row md:items-center justify-between px-4 gap-4">
-         <h2 className="text-3xl font-black text-slate-800 tracking-tight">Board</h2>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 gap-6">
+         <div>
+           <h2 className="text-3xl font-black text-slate-800 tracking-tight">Board</h2>
+           <p className="text-slate-400 text-sm">Visualize your progress.</p>
+         </div>
          <div className="flex flex-wrap items-center gap-3">
-            <select 
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="text-[10px] font-black uppercase tracking-widest bg-white border-none rounded-xl px-4 py-2 shadow-sm border border-slate-50 outline-none focus:ring-1 focus:ring-bloom-pink transition-all"
-            >
-              <option value="ALL">All Priority</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
-            </select>
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="text-[10px] font-black uppercase tracking-widest bg-white border-none rounded-xl px-4 py-2 shadow-sm border border-slate-50 outline-none focus:ring-1 focus:ring-bloom-pink transition-all"
-            >
-              <option value="NEWEST">Newest</option>
-              <option value="OLDEST">Oldest</option>
-              <option value="DUE_DATE">Due Date</option>
-            </select>
-            <div className="flex gap-2 ml-2">
+            <div className="flex items-center gap-2 bg-white rounded-2xl p-1 shadow-sm border border-bloom-pink/10">
+              <select 
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value)}
+                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500"
+              >
+                <option value="ALL">All Priority</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </select>
+              <div className="w-px h-4 bg-slate-100" />
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500"
+              >
+                <option value="NEWEST">Newest</option>
+                <option value="OLDEST">Oldest</option>
+                <option value="DUE_DATE">Due Date</option>
+              </select>
+            </div>
+            
+            <div className="flex gap-2">
                {COLUMNS.map(col => (
                  <button 
                    key={col.id}
                    onClick={() => openAddModal(col.id)}
-                   className="bg-white text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-2 rounded-xl shadow-sm border border-slate-50 hover:text-bloom-pink hover:border-bloom-pink/20 transition-all"
+                   className="bg-white text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 rounded-2xl shadow-sm border border-bloom-pink/5 hover:text-bloom-pink hover:border-bloom-pink/20 transition-all active:scale-95"
                  >
-                   + {col.title}
+                   + {col.title.split(' ')[0]}
                  </button>
                ))}
             </div>
