@@ -48,30 +48,20 @@ export default function Habits() {
   return (
     <div className="max-w-5xl mx-auto space-y-10 pb-20">
       {/* Stats Header */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-bloom-purple rounded-[2.5rem] p-8 text-white shadow-xl shadow-bloom-purple/20 relative overflow-hidden">
           <div className="relative z-10">
             <Target className="w-8 h-8 mb-4 opacity-80" />
             <h3 className="text-4xl font-black mb-1">{Math.round(completionRate)}%</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Daily Focus</p>
+            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Rituals Completed Today</p>
           </div>
           <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">%</div>
-        </div>
-        <div className="bg-bloom-pink rounded-[2.5rem] p-8 text-white shadow-xl shadow-bloom-pink/20 relative overflow-hidden">
-          <div className="relative z-10">
-            <Flame className="w-8 h-8 mb-4 opacity-80" />
-            <h3 className="text-4xl font-black mb-1">{habits.reduce((acc, h) => acc + calculateStreak(h), 0)}</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Total Streaks</p>
-          </div>
-          <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">
-            <Flame className="w-24 h-24" />
-          </div>
         </div>
         <div className="bg-bloom-green rounded-[2.5rem] p-8 text-bloom-dark-green shadow-xl shadow-bloom-green/20 relative overflow-hidden">
           <div className="relative z-10">
             <Trophy className="w-8 h-8 mb-4 opacity-80" />
             <h3 className="text-4xl font-black mb-1">{habits.length}</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Active Habits</p>
+            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Active Rituals</p>
           </div>
           <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">
             <Activity className="w-24 h-24" />
@@ -113,27 +103,16 @@ export default function Habits() {
                     onChange={e => setNewHabit({...newHabit, title: e.target.value})}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <label className="block text-xs font-black uppercase tracking-[0.2em] text-bloom-pink">Frequency</label>
-                    <select 
-                      className="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-600 outline-none hover:bg-slate-100 transition-colors"
-                      value={newHabit.frequency}
-                      onChange={e => setNewHabit({...newHabit, frequency: e.target.value as any})}
-                    >
-                      <option value="DAILY">Daily</option>
-                      <option value="WEEKLY">Weekly</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <label className="block text-xs font-black uppercase tracking-[0.2em] text-bloom-pink">Points</label>
-                    <input 
-                      type="number"
-                      className="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-600 outline-none hover:bg-slate-100 transition-colors"
-                      value={newHabit.points}
-                      onChange={e => setNewHabit({...newHabit, points: parseInt(e.target.value)})}
-                    />
-                  </div>
+                <div className="space-y-4">
+                  <label className="block text-xs font-black uppercase tracking-[0.2em] text-bloom-pink">Frequency</label>
+                  <select 
+                    className="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-600 outline-none hover:bg-slate-100 transition-colors"
+                    value={newHabit.frequency}
+                    onChange={e => setNewHabit({...newHabit, frequency: e.target.value as any})}
+                  >
+                    <option value="DAILY">Daily</option>
+                    <option value="WEEKLY">Weekly</option>
+                  </select>
                 </div>
               </div>
               <div className="flex justify-end gap-4 border-t border-slate-50 pt-8">
@@ -197,19 +176,14 @@ export default function Habits() {
                     <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-transparent">
                       <CalendarDays className="w-3 h-3" /> {habit.frequency}
                     </span>
-                    <span className={cn(
-                      "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
-                      streak > 0 ? "text-orange-500 bg-orange-50" : "text-slate-300 bg-slate-50"
-                    )}>
-                      <Flame className="w-3 h-3" /> {streak} day streak
-                    </span>
+                    {/* Streak indicator removed */}
                   </div>
                 </div>
 
                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Reward</span>
-                    <span className="text-lg font-black text-bloom-pink">+{habit.points} pts</span>
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Ritual</span>
+                    <span className="text-sm font-bold text-slate-500">Scheduled</span>
                   </div>
                   <button 
                     onClick={() => !completed && logHabit(habit.id)}

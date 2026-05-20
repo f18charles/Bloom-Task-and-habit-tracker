@@ -14,7 +14,7 @@ import { motion } from "motion/react";
 import api from "../api/axios.ts";
 import { cn } from "../lib/utils.ts";
 import TaskModal from "../components/TaskModal.tsx";
-import { calculateLevel, getLevelProgress, getPointsForLevel } from "../lib/levelUtils.ts";
+// Gamification level utilities removed
 
 import { ErrorBoundary } from "../components/ErrorBoundary.tsx";
 import { Skeleton, TaskSkeleton, CardSkeleton } from "../components/Skeleton.tsx";
@@ -30,10 +30,13 @@ export default function Dashboard() {
   const [filterPriority, setFilterPriority] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState<string>("NEWEST");
 
-  const currentLevel = calculateLevel(user?.points || 0);
-  const nextLevel = currentLevel + 1;
-  const progress = getLevelProgress(user?.points || 0);
-  const pointsToNext = getPointsForLevel(nextLevel) - (user?.points || 0);
+  const pendingTasksCount = tasks.filter(t => t.status !== "DONE").length;
+  const pendingHabitsCount = habits.filter(h => {
+    const isLoggedToday = h.logs?.some(l => 
+      new Date(l.completedAt).toDateString() === new Date().toDateString()
+    );
+    return !isLoggedToday;
+  }).length;
 
   useEffect(() => {
     fetchTasks();
@@ -77,75 +80,29 @@ export default function Dashboard() {
         onClose={() => setIsModalOpen(false)} 
         task={selectedTask}
       />
-      {/* Top Banner Row */}
+      {/* Overview Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
          <div className="bg-bloom-pink rounded-[2rem] p-6 sm:p-8 text-white shadow-md relative overflow-hidden flex flex-col justify-center min-h-[140px] sm:min-h-[160px]">
-            <div className="relative z-10 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] uppercase font-black tracking-widest opacity-80 mb-1">Current Level</p>
-                  <h4 className="text-3xl sm:text-4xl font-black">Level {currentLevel}</h4>
-                </div>
-                <div className="bg-white/20 p-2 sm:p-3 rounded-2xl backdrop-blur-md">
-                  <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-[9px] sm:text-[10px] font-black uppercase tracking-widest leading-none">
-                  <span>{user?.points || 0} XP</span>
-                  <span>{pointsToNext} XP to Lvl {nextLevel}</span>
-                </div>
-                <div className="h-2 sm:h-3 w-full bg-black/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    className="h-full bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                  />
-                </div>
-              </div>
+            <div className="relative z-10 space-y-2">
+              <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Workspace Status</span>
+              <h4 className="text-2xl sm:text-3xl font-black">Your Focus Area</h4>
+              <p className="text-sm opacity-90">
+                You currently have <span className="font-bold underline">{pendingTasksCount} tasks</span> remaining to complete.
+              </p>
             </div>
-            <div className="absolute -bottom-10 -right-10 text-[8rem] sm:text-[12rem] opacity-5 font-black leading-none pointer-events-none select-none">
-              {currentLevel}
+            <div className="absolute -bottom-10 -right-10 text-[8rem] sm:text-[10rem] opacity-5 font-black leading-none pointer-events-none select-none">
+              ✓
             </div>
          </div>
          <div className="bg-bloom-green rounded-[2rem] p-6 sm:p-8 text-bloom-dark-green shadow-md flex flex-col justify-center min-h-[140px] sm:min-h-[160px]">
-           <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[10px] uppercase font-black tracking-widest opacity-80 mb-1">Weekly Growth</p>
-                <h4 className="text-xl sm:text-2xl font-bold">Flourishing</h4>
-              </div>
-              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-bloom-dark-green opacity-40" />
-           </div>
-           <div className="flex items-end gap-1.5 sm:gap-2 h-12 sm:h-16 mt-2">
-             {stats?.pointsHistory ? (
-               stats.pointsHistory.map((day: any, i: number) => {
-                 const maxPoints = Math.max(...stats.pointsHistory.map((d: any) => d.points), 10);
-                 const height = (day.points / maxPoints) * 100;
-                 return (
-                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                     <div 
-                       className={cn(
-                         "w-full rounded-t-lg transition-all duration-500",
-                         i === 6 ? "bg-bloom-dark-green" : "bg-bloom-dark-green/20"
-                       )}
-                       style={{ height: `${Math.max(height, 5)}%` }}
-                     ></div>
-                     <span className="text-[8px] font-bold opacity-40">{day.name[0]}</span>
-                   </div>
-                 );
-               })
-             ) : (
-                <>
-                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-12"></div>
-                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-6"></div>
-                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-16"></div>
-                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-8"></div>
-                  <div className="flex-1 bg-bloom-dark-green rounded-t-lg h-14"></div>
-                  <div className="flex-1 bg-bloom-dark-green/20 rounded-t-lg h-10"></div>
-                  <div className="flex-1 bg-bloom-dark-green/10 rounded-t-lg h-12"></div>
-                </>
-             )}
+           <div className="space-y-2">
+              <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Daily Habits</span>
+              <h4 className="text-2xl sm:text-3xl font-black">Daily Rituals</h4>
+              <p className="text-sm opacity-90">
+                {pendingHabitsCount > 0 
+                  ? `You have ${pendingHabitsCount} habits remaining to log today.` 
+                  : "All habits completed for today! Excellent job."}
+              </p>
            </div>
          </div>
       </div>
@@ -156,7 +113,6 @@ export default function Dashboard() {
           <section className="bloom-card p-6 flex-1">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-gray-700">Daily Habits</h3>
-              <span className="text-xs text-bloom-green font-bold px-2 py-1 bg-bloom-green-light rounded-lg">+50 pts</span>
             </div>
             <div className="space-y-4">
               {(habitsLoading) ? (
@@ -194,7 +150,7 @@ export default function Dashboard() {
                       )}>{habit.title}</span>
                     </div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      {isLoggedToday ? "Done" : `+${habit.points}`}
+                      {isLoggedToday ? "Done" : "Pending"}
                     </span>
                   </div>
                 );
@@ -202,50 +158,7 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section className="bloom-card p-6 min-h-[160px]">
-             <h3 className="font-bold text-gray-700 mb-4 text-sm">Achievement Badges</h3>
-             <div className="flex flex-wrap gap-4">
-               {currentLevel >= 1 && (
-                 <div className="flex flex-col items-center gap-1">
-                   <div className="w-12 h-12 rounded-full bg-bloom-pink-light flex items-center justify-center text-xl shadow-sm border border-white" title="Seedling: Reach Level 1">🌱</div>
-                   <span className="text-[10px] font-bold text-slate-400">Lvl 1</span>
-                 </div>
-               )}
-               {currentLevel >= 5 ? (
-                 <div className="flex flex-col items-center gap-1">
-                   <div className="w-12 h-12 rounded-full bg-bloom-green-light flex items-center justify-center text-xl shadow-sm border border-white" title="Sprout: Reach Level 5">🌿</div>
-                   <span className="text-[10px] font-bold text-slate-400">Lvl 5</span>
-                 </div>
-               ) : (
-                 <div className="flex flex-col items-center gap-1 opacity-20 grayscale">
-                    <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-xl shadow-sm border border-white">🔒</div>
-                    <span className="text-[10px] font-bold text-slate-300">Lvl 5</span>
-                 </div>
-               )}
-               {currentLevel >= 10 ? (
-                 <div className="flex flex-col items-center gap-1">
-                   <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-xl shadow-sm border border-white" title="Bloomed: Reach Level 10">🌸</div>
-                   <span className="text-[10px] font-bold text-slate-400">Lvl 10</span>
-                 </div>
-               ) : (
-                 <div className="flex flex-col items-center gap-1 opacity-20 grayscale">
-                    <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-xl shadow-sm border border-white">🔒</div>
-                    <span className="text-[10px] font-bold text-slate-300">Lvl 10</span>
-                 </div>
-               )}
-               {currentLevel >= 20 ? (
-                 <div className="flex flex-col items-center gap-1 border-2 border-yellow-400 rounded-full p-0.5">
-                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xl shadow-sm border border-white" title="Master Gardener: Reach Level 20">👑</div>
-                   <span className="text-[10px] font-black text-yellow-600">Lvl 20</span>
-                 </div>
-               ) : (
-                 <div className="flex flex-col items-center gap-1 opacity-20 grayscale">
-                    <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-xl shadow-sm border border-white">🔒</div>
-                    <span className="text-[10px] font-bold text-slate-300">Lvl 20</span>
-                 </div>
-               )}
-             </div>
-          </section>
+          {/* Achievement Badges section removed */}
         </div>
 
         {/* Right Column: Tasks */}
@@ -321,7 +234,7 @@ export default function Dashboard() {
                        <div className="w-5 h-5 rounded-full bg-bloom-pink-light flex items-center justify-center text-[8px] font-bold text-bloom-pink border border-white">
                           {user?.displayName?.[0] || 'U'}
                        </div>
-                       <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">+{task.points} pts</span>
+                       <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{task.status || 'Planned'}</span>
                      </div>
                    </div>
                  ))

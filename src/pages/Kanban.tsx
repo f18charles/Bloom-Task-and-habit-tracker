@@ -28,7 +28,7 @@ import TaskModal from "../components/TaskModal.tsx";
 import { TaskSkeleton } from "../components/Skeleton.tsx";
 
 function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
-  const { deleteTask } = useTaskStore();
+  const { deleteTask, updateTask } = useTaskStore();
   const {
     attributes,
     listeners,
@@ -119,6 +119,46 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
+            </div>
+
+            {/* Mobile Column Quick Switcher */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1 mt-3 md:hidden">
+              <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Move</span>
+              <div className="flex items-center gap-1.5">
+                {task.status !== "TODO" && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await updateTask(task.id, { status: "TODO" });
+                    }}
+                    className="text-[9px] font-bold bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-bloom-pink px-2.5 py-1.5 rounded-xl transition-all"
+                  >
+                    To Do
+                  </button>
+                )}
+                {task.status !== "IN_PROGRESS" && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await updateTask(task.id, { status: "IN_PROGRESS" });
+                    }}
+                    className="text-[9px] font-bold bg-bloom-pink-light text-bloom-pink hover:bg-bloom-pink hover:text-white px-2.5 py-1.5 rounded-xl transition-all"
+                  >
+                    In Progress
+                  </button>
+                )}
+                {task.status !== "DONE" && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await updateTask(task.id, { status: "DONE" });
+                    }}
+                    className="text-[9px] font-bold bg-bloom-green/10 text-bloom-dark-green hover:bg-bloom-green hover:text-white px-2.5 py-1.5 rounded-xl transition-all"
+                  >
+                    Done
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

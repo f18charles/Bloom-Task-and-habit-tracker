@@ -80,21 +80,6 @@ export default function Settings() {
     }
   };
 
-  const handleExportData = async () => {
-    try {
-      const response = await api.get("/users/export", { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'bloom_export.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      alert("Failed to export data");
-    }
-  };
-
   const setManualTheme = (theme: 'light' | 'dark' | 'system') => {
     if (theme === 'system') {
       localStorage.removeItem('bloom-theme');
@@ -126,12 +111,6 @@ export default function Settings() {
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
-             <button 
-               onClick={handleExportData}
-               className="text-sm font-bold text-slate-500 hover:text-bloom-pink px-4 py-2 bg-slate-50 rounded-2xl transition-all flex-1 md:flex-none text-center"
-             >
-               Export (.csv)
-             </button>
              <button 
                onClick={logout}
                className="flex items-center justify-center gap-2 text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-2xl transition-all flex-1 md:flex-none"

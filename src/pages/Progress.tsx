@@ -36,41 +36,6 @@ export default function Progress() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* Points Area Chart */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bloom-card p-6 sm:p-8 lg:col-span-2"
-      >
-        <h3 className="text-xl font-bold text-slate-800 mb-8">Points Earned Weekly</h3>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={stats?.pointsHistory || []}>
-              <defs>
-                <linearGradient id="colorPoints" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f9a8c9" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#f9a8c9" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="points" 
-                stroke="#f9a8c9" 
-                strokeWidth={4} 
-                fillOpacity={1} 
-                fill="url(#colorPoints)" 
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
-
       {/* Task Completion Line Chart */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}

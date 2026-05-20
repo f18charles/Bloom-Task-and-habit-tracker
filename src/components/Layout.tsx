@@ -95,7 +95,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold truncate max-w-[100px] text-bloom-dark-green">{user.displayName}</span>
-                <span className="text-[10px] text-bloom-dark-green/60 uppercase tracking-wider">{user.points} pts</span>
               </div>
             </div>
             <button 
@@ -124,16 +123,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-            <div className="flex items-center gap-2 bg-white px-3 md:px-4 py-2 rounded-2xl shadow-sm border border-white whitespace-nowrap">
-              <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
-              <span className="font-bold text-slate-700 text-xs md:text-sm">5 day streak</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white px-3 md:px-4 py-2 rounded-2xl shadow-sm border border-white whitespace-nowrap">
-              <Award className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
-              <span className="font-bold text-bloom-pink text-xs md:text-sm">{user.points} pts</span>
-            </div>
-          </div>
+          {/* Streak and points badges removed */}
         </header>
 
         <div className="max-w-7xl mx-auto">

@@ -81,7 +81,7 @@ router.post("/sync", async (req: AuthRequest, res) => {
 
 router.delete("/disconnect", async (req: AuthRequest, res) => {
   try {
-    await prisma.googleToken.delete({ where: { userId: req.user!.id } });
+    await prisma.googleToken.deleteMany({ where: { userId: req.user!.id } });
     res.json({ data: { success: true } });
   } catch (error) {
     res.status(500).json({ error: "Failed to disconnect" });
