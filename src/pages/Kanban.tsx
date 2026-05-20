@@ -52,7 +52,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bloom-card p-5 group bg-white border border-bloom-pink/5 hover:border-bloom-pink/30 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
+      className="bloom-card p-5 group bg-white dark:bg-slate-800/40 border border-bloom-pink/5 dark:border-slate-700/40 hover:border-bloom-pink/30 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
@@ -61,14 +61,14 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-2">
-            <h4 className="font-bold text-slate-800 truncate text-sm leading-none">{task.title}</h4>
+            <h4 className="font-bold text-slate-800 dark:text-white truncate text-sm leading-none">{task.title}</h4>
             <div className="flex items-center gap-1.5 min-w-max">
               {task.googleEventId && <Calendar className="w-3 h-3 text-blue-400" />}
-              <span className="text-[10px] text-slate-300 font-mono tracking-tighter">#{task.id.slice(-4).toUpperCase()}</span>
+              <span className="text-[10px] text-slate-300 dark:text-slate-500 font-mono tracking-tighter">#{task.id.slice(-4).toUpperCase()}</span>
             </div>
           </div>
           
-          {task.description && <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-4">{task.description}</p>}
+          {task.description && <p className="text-[11px] text-slate-400 dark:text-slate-300 line-clamp-2 leading-relaxed mb-4">{task.description}</p>}
           
           <div className="space-y-4">
             {totalSubtasks > 0 && (
@@ -80,7 +80,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
                   </div>
                   <span>{Math.round(subtaskProgress)}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-slate-50 dark:bg-slate-700 rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${subtaskProgress}%` }}
@@ -94,15 +94,15 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
               <div className="flex items-center gap-2">
                 <span className={cn(
                   "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm",
-                  task.priority === "HIGH" ? "bg-red-50 text-red-500" :
-                  task.priority === "MEDIUM" ? "bg-orange-50 text-orange-500" : "bg-blue-50 text-blue-500"
+                  task.priority === "HIGH" ? "bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300" :
+                  task.priority === "MEDIUM" ? "bg-orange-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-300" : "bg-blue-50 text-blue-500 dark:bg-blue-950/40 dark:text-blue-300"
                 )}>
                   {task.priority}
                 </span>
                 {task.dueDate && (
                   <div className={cn(
                     "flex items-center gap-1 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded",
-                    isPast(new Date(task.dueDate)) ? "bg-red-50 text-red-400" : "bg-slate-50 text-slate-400"
+                    isPast(new Date(task.dueDate)) ? "bg-red-50 text-red-400 dark:bg-red-950/40 dark:text-red-300" : "bg-slate-50 text-slate-400 dark:bg-slate-700 dark:text-slate-300"
                   )}>
                     <Clock className="w-2.5 h-2.5" />
                     <span>{formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}</span>
@@ -115,15 +115,15 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
                   e.stopPropagation();
                   deleteTask(task.id);
                 }}
-                className="opacity-0 group-hover:opacity-100 p-1 text-slate-200 hover:text-red-500 transition-all rounded-lg hover:bg-red-50"
+                className="opacity-0 group-hover:opacity-100 p-1 text-slate-200 hover:text-red-500 transition-all rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Mobile Column Quick Switcher */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1 mt-3 md:hidden">
-              <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Move</span>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between gap-1 mt-3 md:hidden">
+              <span className="text-[9px] font-black text-slate-300 dark:text-slate-500 uppercase tracking-widest">Move</span>
               <div className="flex items-center gap-1.5">
                 {task.status !== "TODO" && (
                   <button
@@ -131,7 +131,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
                       e.stopPropagation();
                       await updateTask(task.id, { status: "TODO" });
                     }}
-                    className="text-[9px] font-bold bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-bloom-pink px-2.5 py-1.5 rounded-xl transition-all"
+                    className="text-[9px] font-bold bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-bloom-pink px-2.5 py-1.5 rounded-xl transition-all"
                   >
                     To Do
                   </button>
@@ -142,7 +142,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
                       e.stopPropagation();
                       await updateTask(task.id, { status: "IN_PROGRESS" });
                     }}
-                    className="text-[9px] font-bold bg-bloom-pink-light text-bloom-pink hover:bg-bloom-pink hover:text-white px-2.5 py-1.5 rounded-xl transition-all"
+                    className="text-[9px] font-bold bg-bloom-pink-light dark:bg-bloom-pink/20 text-bloom-pink hover:bg-bloom-pink hover:text-white px-2.5 py-1.5 rounded-xl transition-all"
                   >
                     In Progress
                   </button>
@@ -153,7 +153,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
                       e.stopPropagation();
                       await updateTask(task.id, { status: "DONE" });
                     }}
-                    className="text-[9px] font-bold bg-bloom-green/10 text-bloom-dark-green hover:bg-bloom-green hover:text-white px-2.5 py-1.5 rounded-xl transition-all"
+                    className="text-[9px] font-bold bg-bloom-green/10 dark:bg-bloom-green/20 text-bloom-dark-green dark:text-[#a7f3d0] hover:bg-bloom-green hover:text-white px-2.5 py-1.5 rounded-xl transition-all"
                   >
                     Done
                   </button>
@@ -262,26 +262,26 @@ export default function Kanban() {
       />
       <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 gap-6">
          <div>
-           <h2 className="text-3xl font-black text-slate-800 tracking-tight">Board</h2>
-           <p className="text-slate-400 text-sm">Visualize your progress.</p>
+           <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Board</h2>
+           <p className="text-slate-400 dark:text-slate-300 text-sm">Visualize your progress.</p>
          </div>
          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-2xl p-1 shadow-sm border border-bloom-pink/10">
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-2xl p-1 shadow-sm border border-bloom-pink/10 dark:border-slate-700">
               <select 
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500"
+                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500 dark:text-slate-300"
               >
                 <option value="ALL">All Priority</option>
                 <option value="HIGH">High</option>
                 <option value="MEDIUM">Medium</option>
                 <option value="LOW">Low</option>
               </select>
-              <div className="w-px h-4 bg-slate-100" />
+              <div className="w-px h-4 bg-slate-100 dark:bg-slate-700" />
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500"
+                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500 dark:text-slate-300"
               >
                 <option value="NEWEST">Newest</option>
                 <option value="OLDEST">Oldest</option>
@@ -294,7 +294,7 @@ export default function Kanban() {
                  <button 
                    key={col.id}
                    onClick={() => openAddModal(col.id)}
-                   className="bg-white text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 rounded-2xl shadow-sm border border-bloom-pink/5 hover:text-bloom-pink hover:border-bloom-pink/20 transition-all active:scale-95"
+                   className="bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-300 px-4 py-3 rounded-2xl shadow-sm border border-bloom-pink/5 dark:border-slate-700 hover:text-bloom-pink hover:border-bloom-pink/20 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
                  >
                    + {col.title.split(' ')[0]}
                  </button>
@@ -320,10 +320,10 @@ export default function Kanban() {
           ))}
         </div>
       ) : tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center p-12 bg-white rounded-[3rem] border border-bloom-pink/10 max-w-lg mx-auto my-12 shadow-sm">
+        <div className="flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-slate-800/40 rounded-[3rem] border border-bloom-pink/10 dark:border-slate-700/30 max-w-lg mx-auto my-12 shadow-sm">
           <Flower className="w-16 h-16 text-bloom-pink mb-4 animate-pulse" />
-          <h3 className="text-xl font-black text-slate-800 mb-2">No tasks yet</h3>
-          <p className="text-sm text-slate-400 mb-6">Start by adding your first task to see it on the Kanban board.</p>
+          <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">No tasks yet</h3>
+          <p className="text-sm text-slate-400 dark:text-slate-300 mb-6 font-medium">Start by adding your first task to see it on the Kanban board.</p>
           <button 
             type="button"
             onClick={() => openAddModal("TODO")}
@@ -364,14 +364,14 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any)
       <div className="flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <div className={cn("w-3 h-3 rounded-full shadow-sm", col.color)} />
-          <h3 className="font-black text-slate-400 uppercase tracking-[0.2em] text-[10px]">
+          <h3 className="font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] text-[10px]">
             {col.title}
           </h3>
-          <span className="bg-white text-[10px] font-black text-slate-300 w-6 h-6 rounded-lg flex items-center justify-center border border-slate-50">{tasks.length}</span>
+          <span className="bg-white dark:bg-slate-850 text-[10px] font-black text-slate-300 dark:text-slate-500 w-6 h-6 rounded-lg flex items-center justify-center border border-slate-50 dark:border-slate-700/60 shadow-sm">{tasks.length}</span>
         </div>
         <button 
           onClick={() => openAddModal(col.id)}
-          className="p-1.5 bg-white rounded-xl text-slate-300 hover:text-bloom-pink shadow-sm border border-slate-50 transition-colors"
+          className="p-1.5 bg-white dark:bg-slate-800 rounded-xl text-slate-300 dark:text-slate-500 hover:text-bloom-pink shadow-sm border border-slate-50 dark:border-slate-700/60 transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
         </button>
@@ -379,7 +379,7 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any)
  
       <div 
         ref={setNodeRef}
-        className="flex-1 bg-bloom-bg/30 border-2 border-white rounded-[2.5rem] p-6 space-y-4 overflow-y-auto"
+        className="flex-1 bg-bloom-bg/30 dark:bg-slate-800/20 border-2 border-white dark:border-slate-800/30 rounded-[2.5rem] p-6 space-y-4 overflow-y-auto"
       >
         {isLoading ? (
           <>
@@ -398,8 +398,8 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any)
         )}
  
         {!isLoading && tasks.length === 0 && (
-          <div className="h-32 border-2 border-dashed border-slate-100 rounded-[2rem] flex flex-col items-center justify-center gap-2 group hover:border-bloom-pink/20 transition-colors cursor-pointer" onClick={() => openAddModal(col.id)}>
-            <p className="text-[10px] font-black text-slate-200 uppercase tracking-widest group-hover:text-bloom-pink/40">Drop items here</p>
+          <div className="h-32 border-2 border-dashed border-slate-100 dark:border-slate-700/40 rounded-[2rem] flex flex-col items-center justify-center gap-2 group hover:border-bloom-pink/20 transition-colors cursor-pointer" onClick={() => openAddModal(col.id)}>
+            <p className="text-[10px] font-black text-slate-200 dark:text-slate-650 uppercase tracking-widest group-hover:text-bloom-pink/40">Drop items here</p>
           </div>
         )}
       </div>

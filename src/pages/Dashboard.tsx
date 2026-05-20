@@ -112,7 +112,7 @@ export default function Dashboard() {
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
           <section className="bloom-card p-6 flex-1">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-gray-700">Daily Habits</h3>
+              <h3 className="font-bold text-gray-700 dark:text-white">Daily Habits</h3>
             </div>
             <div className="space-y-4">
               {(habitsLoading) ? (
@@ -130,7 +130,7 @@ export default function Dashboard() {
                   new Date(l.completedAt).toDateString() === new Date().toDateString()
                 );
                 return (
-                  <div key={habit.id} className="flex items-center justify-between p-3 bg-bloom-bg rounded-xl transition-colors">
+                  <div key={habit.id} className="flex items-center justify-between p-3 bg-bloom-bg dark:bg-slate-700/40 rounded-xl transition-colors">
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => !isLoggedToday && logHabit(habit.id)}
@@ -139,14 +139,14 @@ export default function Dashboard() {
                           "w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all",
                           isLoggedToday 
                             ? "bg-bloom-pink border-bloom-pink" 
-                            : "border-bloom-pink bg-white hover:bg-bloom-pink/10"
+                            : "border-bloom-pink bg-white dark:bg-slate-800 hover:bg-bloom-pink/10"
                         )}
                       >
                         {isLoggedToday && <CheckCircle2 className="w-4 h-4 text-white" />}
                       </button>
                       <span className={cn(
-                        "text-sm font-medium",
-                        isLoggedToday && "text-slate-400 line-through opacity-50"
+                        "text-sm font-medium dark:text-slate-200",
+                        isLoggedToday && "text-slate-400 dark:text-slate-500 line-through opacity-50"
                       )}>{habit.title}</span>
                     </div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -166,14 +166,14 @@ export default function Dashboard() {
           <section className="bloom-card p-8 flex-1 border-none shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div className="flex flex-col">
-                <h3 className="font-bold text-lg text-gray-700">Currently Blooming</h3>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">Your priority focus</p>
+                <h3 className="font-bold text-lg text-gray-700 dark:text-white">Currently Blooming</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-500">Your priority focus</p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <select 
                   value={filterPriority}
                   onChange={(e) => setFilterPriority(e.target.value)}
-                  className="text-[10px] font-black uppercase tracking-widest bg-bloom-bg/50 border-none rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-bloom-pink transition-all text-slate-500"
+                  className="text-[10px] font-black uppercase tracking-widest bg-bloom-bg/50 dark:bg-slate-705 border-none dark:border dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-bloom-pink transition-all text-slate-500 dark:text-slate-300"
                 >
                   <option value="ALL">All Priority</option>
                   <option value="HIGH">High</option>
@@ -183,7 +183,7 @@ export default function Dashboard() {
                 <select 
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="text-[10px] font-black uppercase tracking-widest bg-bloom-bg/50 border-none rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-bloom-pink transition-all text-slate-500"
+                  className="text-[10px] font-black uppercase tracking-widest bg-bloom-bg/50 dark:bg-slate-705 border-none dark:border dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-bloom-pink transition-all text-slate-500 dark:text-slate-300"
                 >
                   <option value="NEWEST">Newest</option>
                   <option value="OLDEST">Oldest</option>
@@ -191,7 +191,7 @@ export default function Dashboard() {
                 </select>
                 <button 
                   onClick={() => window.location.href='/kanban'}
-                  className="text-bloom-pink font-black text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-bloom-pink-light rounded-xl transition-all"
+                  className="text-bloom-pink font-black text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-bloom-pink-light dark:hover:bg-bloom-pink/20 rounded-xl transition-all"
                 >
                   View Board
                 </button>
@@ -204,10 +204,10 @@ export default function Dashboard() {
                    <TaskSkeleton />
                  </>
                ) : upcomingTasks.length === 0 ? (
-                 <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-bloom-bg/30 rounded-[2rem] border border-bloom-pink/10 p-8">
+                 <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-bloom-bg/30 dark:bg-slate-800/20 rounded-[2rem] border border-bloom-pink/10 dark:border-slate-700/30 p-8">
                     <Flower className="w-14 h-14 text-bloom-pink animate-pulse mb-4" />
-                    <h3 className="text-xl font-black text-slate-800 mb-2">Welcome to Bloom 🌸</h3>
-                    <p className="text-sm text-slate-400 max-w-sm mx-auto mb-4 font-medium">Start organizing your workspace by adding your first task.</p>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Welcome to Bloom 🌸</h3>
+                    <p className="text-sm text-slate-400 dark:text-slate-300 max-w-sm mx-auto mb-4 font-medium">Start organizing your workspace by adding your first task.</p>
                     <div className="flex items-center justify-center gap-4">
                       <button type="button" onClick={openAddModal} className="bloom-btn-primary px-6 py-2 text-sm font-bold rounded-xl cursor-pointer">Add First Task</button>
                       <button type="button" onClick={() => window.location.href='/kanban'} className="text-sm font-bold text-bloom-pink hover:underline">Go to Kanban &rarr;</button>
@@ -218,7 +218,7 @@ export default function Dashboard() {
                    <div 
                      key={task.id} 
                      onClick={() => openEditModal(task)}
-                     className="p-5 border border-bloom-pink/5 rounded-2xl bg-white shadow-sm space-y-3 hover:border-bloom-pink/30 hover:shadow-md transition-all cursor-pointer group"
+                     className="p-5 border border-bloom-pink/5 dark:border-slate-700/50 rounded-2xl bg-white dark:bg-slate-800/40 shadow-sm space-y-3 hover:border-bloom-pink/30 dark:hover:border-slate-600 hover:shadow-md dark:hover:bg-slate-800 transition-all cursor-pointer group"
                    >
                      <div className="flex justify-between items-start">
                        <span className={cn(
@@ -246,7 +246,7 @@ export default function Dashboard() {
                {!tasksLoading && upcomingTasks.length > 0 && (
                  <button 
                    onClick={openAddModal}
-                   className="p-5 border-2 border-dashed border-bloom-pink/10 rounded-2xl bg-bloom-bg/20 flex flex-col items-center justify-center hover:bg-white hover:border-bloom-pink/30 cursor-pointer group transition-all"
+                   className="p-5 border-2 border-dashed border-bloom-pink/10 dark:border-slate-700/40 rounded-2xl bg-bloom-bg/20 dark:bg-slate-700/10 flex flex-col items-center justify-center hover:bg-white dark:hover:bg-slate-800 hover:border-bloom-pink/30 dark:hover:border-slate-600 cursor-pointer group transition-all"
                  >
                     <Plus className="w-6 h-6 text-bloom-pink/40 mb-1 group-hover:scale-125 transition-transform" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-bloom-pink/60">Add Task</span>

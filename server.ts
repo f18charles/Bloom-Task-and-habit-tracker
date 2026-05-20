@@ -22,24 +22,22 @@ async function startServer() {
   app.use(express.json());
 
   // Rate Limiting
-  const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 100, // Limit each IP to 100 requests per `window`
-    message: { error: "Too many requests from this IP, please try again later." },
-    standardHeaders: 'draft-7', // Use standard headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  });
-
   const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    limit: 10, // Strict limit for auth
-    message: { error: "Too many login attempts, please try again in 15 minutes." },
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    // Key by email so one account's lockout doesn't affect others.
+    // Fall back to IP only if email is missing (malformed request).
+    keyGenerator: (req) => {
+      const email = req.body?.email?.toLowerCase?.()?.trim();
+      return email || req.ip || "unknown";
+    },
+    message: { error: "Too many login attempts for this account. Please try again in 15 minutes." },
     standardHeaders: 'draft-7',
     legacyHeaders: false,
+    skip: (req) => !!req.headers.authorization,
   });
 
-  app.use("/api/auth", authLimiter);
-  app.use("/api", generalLimiter);
+  app.use("/api/auth/login", authLimiter);
 
   // Setup Backend API routes
   setupBackend(app);
