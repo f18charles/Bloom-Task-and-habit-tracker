@@ -7,6 +7,10 @@ import { createServer as createViteServer } from "vite";
 import { setupBackend } from "./src/server/index.ts";
 import { setupCronJobs } from "./src/server/cron.ts";
 
+if (!process.env.JWT_SECRET) {
+  throw new Error("FATAL: JWT_SECRET environment variable is not set.");
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useToastStore } from "../store/useToastStore.ts";
 
 const api = axios.create({
   baseURL: "/api"
@@ -18,7 +19,7 @@ api.interceptors.response.use(
     if (!error.response) {
       // Network failure
       console.error("Network error:", error);
-      // You could trigger a toast here if you had a toast provider
+      useToastStore.getState().addToast("Connection lost — check your internet", "error");
       return Promise.reject(error);
     }
 
@@ -30,9 +31,10 @@ api.interceptors.response.use(
         window.location.href = "/auth";
       }
     } else if (status === 429) {
-      alert(error.response.data.error || "Too many requests. Please slow down.");
+      useToastStore.getState().addToast("Too many requests — please slow down", "warning");
     } else if (status >= 500) {
       console.error("Server error:", error);
+      useToastStore.getState().addToast("Something went wrong on our end — try again shortly", "error");
     }
 
     return Promise.reject(error);

@@ -11,9 +11,13 @@ export default function Settings() {
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTheme, setActiveTheme] = useState<'light' | 'dark' | 'system'>('system');
 
   useEffect(() => {
     fetchCalendarStatus();
+    
+    const storedTheme = (localStorage.getItem('bloom-theme') as 'light' | 'dark' | 'system') || 'system';
+    setActiveTheme(storedTheme);
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
@@ -192,6 +196,33 @@ export default function Settings() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold text-slate-800">Appearance</h2>
+        <div className="bloom-card p-6 sm:p-8">
+          <p className="text-sm text-slate-500 mb-6 font-medium">Choose how Bloom looks on your device.</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {(["light", "system", "dark"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => {
+                  setManualTheme(t);
+                  setActiveTheme(t);
+                }}
+                className={cn(
+                  "flex-1 p-4 rounded-2xl font-bold text-sm uppercase tracking-wider transition-all duration-200 border cursor-pointer",
+                  activeTheme === t
+                    ? "bg-bloom-pink border-bloom-pink text-white shadow-xl shadow-bloom-pink/20"
+                    : "bg-slate-50 border-slate-100/60 text-slate-500 hover:bg-slate-100"
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
     </div>

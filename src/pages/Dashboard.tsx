@@ -204,10 +204,14 @@ export default function Dashboard() {
                    <TaskSkeleton />
                  </>
                ) : upcomingTasks.length === 0 ? (
-                 <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-bloom-bg/30 rounded-[2rem] border-2 border-dashed border-bloom-pink/10">
-                    <Flower className="w-12 h-12 text-bloom-pink/20 mb-3" />
-                    <p className="text-slate-400 font-medium italic">No tasks blooming yet!</p>
-                    <button onClick={openAddModal} className="mt-4 bloom-btn-primary px-6 py-2 text-sm">Add First Task</button>
+                 <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-bloom-bg/30 rounded-[2rem] border border-bloom-pink/10 p-8">
+                    <Flower className="w-14 h-14 text-bloom-pink animate-pulse mb-4" />
+                    <h3 className="text-xl font-black text-slate-800 mb-2">Welcome to Bloom 🌸</h3>
+                    <p className="text-sm text-slate-400 max-w-sm mx-auto mb-4 font-medium">Start organizing your workspace by adding your first task.</p>
+                    <div className="flex items-center justify-center gap-4">
+                      <button type="button" onClick={openAddModal} className="bloom-btn-primary px-6 py-2 text-sm font-bold rounded-xl cursor-pointer">Add First Task</button>
+                      <button type="button" onClick={() => window.location.href='/kanban'} className="text-sm font-bold text-bloom-pink hover:underline">Go to Kanban &rarr;</button>
+                    </div>
                  </div>
                ) : (
                  upcomingTasks.slice(0, 3).map((task) => (

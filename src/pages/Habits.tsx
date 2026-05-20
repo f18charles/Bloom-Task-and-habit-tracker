@@ -8,11 +8,13 @@ import {
   CalendarDays,
   Target,
   Trophy,
-  Activity
+  Activity,
+  Repeat
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
 import { cn } from "../lib/utils.ts";
+import { CardSkeleton } from "../components/Skeleton.tsx";
 
 export default function Habits() {
   const { habits, fetchHabits, addHabit, logHabit, deleteHabit, isLoading } = useHabitStore();
@@ -123,7 +125,13 @@ export default function Habits() {
                 >
                   Later
                 </button>
-                <button type="submit" className="bg-bloom-pink text-white font-bold px-10 py-3 rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-105 active:scale-95 transition-all">Start Ritual</button>
+                <button 
+                  type="submit" 
+                  disabled={newHabit.title.trim().length === 0}
+                  className="bg-bloom-pink text-white font-bold px-10 py-3 rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all cursor-pointer"
+                >
+                  Start Ritual
+                </button>
               </div>
             </form>
           </motion.div>
@@ -133,9 +141,23 @@ export default function Habits() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {isLoading ? (
           <>
-            <div className="h-64 bg-slate-50 rounded-[2.5rem] animate-pulse"></div>
-            <div className="h-64 bg-slate-50 rounded-[2.5rem] animate-pulse"></div>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
           </>
+        ) : habits.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center text-center p-12 bg-white rounded-[3rem] border border-bloom-pink/10 max-w-lg mx-auto shadow-sm">
+            <Repeat className="w-16 h-16 text-bloom-pink mb-4 animate-[spin_6s_linear_infinite]" />
+            <h3 className="text-xl font-bold text-slate-800 mb-2">No habits yet</h3>
+            <p className="text-sm text-slate-400 mb-6">Build your first daily habit to gain structure and routine.</p>
+            <button 
+              type="button"
+              onClick={() => setShowAdd(true)}
+              className="px-6 py-3 bg-bloom-pink text-white font-black rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Add Habit
+            </button>
+          </div>
         ) : habits.map((habit) => {
           const completed = isCompletedToday(habit);
           const streak = calculateStreak(habit);

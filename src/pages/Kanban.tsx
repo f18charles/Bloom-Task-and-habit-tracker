@@ -20,7 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useTaskStore, Task } from "../store/useTaskStore.ts";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2, Calendar, LayoutList, Clock } from "lucide-react";
+import { GripVertical, Plus, Trash2, Calendar, LayoutList, Clock, Flower } from "lucide-react";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { motion } from "motion/react";
 import { cn } from "../lib/utils.ts";
@@ -302,24 +302,56 @@ export default function Kanban() {
             </div>
          </div>
       </div>
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      {isLoading ? (
         <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
           {COLUMNS.map((col) => (
-            <KanbanColumn 
-              key={col.id}
-              col={col}
-              tasks={filteredTasks.filter(t => t.status === col.id)}
-              openAddModal={openAddModal}
-              onTaskClick={openEditModal}
-              isLoading={isLoading}
-            />
+            <div key={col.id} className="flex-1 flex flex-col gap-4 min-w-[300px] md:min-w-[320px]">
+              <div className="flex items-center justify-between px-4">
+                <div className="flex items-center gap-3">
+                  <div className={cn("w-3 h-3 rounded-full shadow-sm", col.color)} />
+                  <h3 className="font-black text-slate-400 uppercase tracking-[0.2em] text-[10px]">{col.title}</h3>
+                </div>
+              </div>
+              <div className="flex-1 bg-bloom-bg/30 border-2 border-white rounded-[2.5rem] p-6 space-y-4">
+                <TaskSkeleton />
+                <TaskSkeleton />
+              </div>
+            </div>
           ))}
         </div>
-      </DndContext>
+      ) : tasks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center text-center p-12 bg-white rounded-[3rem] border border-bloom-pink/10 max-w-lg mx-auto my-12 shadow-sm">
+          <Flower className="w-16 h-16 text-bloom-pink mb-4 animate-pulse" />
+          <h3 className="text-xl font-black text-slate-800 mb-2">No tasks yet</h3>
+          <p className="text-sm text-slate-400 mb-6">Start by adding your first task to see it on the Kanban board.</p>
+          <button 
+            type="button"
+            onClick={() => openAddModal("TODO")}
+            className="px-6 py-3 bg-bloom-pink text-white font-black rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Add Task
+          </button>
+        </div>
+      ) : (
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
+            {COLUMNS.map((col) => (
+              <KanbanColumn 
+                key={col.id}
+                col={col}
+                tasks={filteredTasks.filter(t => t.status === col.id)}
+                openAddModal={openAddModal}
+                onTaskClick={openEditModal}
+                isLoading={isLoading}
+              />
+            ))}
+          </div>
+        </DndContext>
+      )}
     </div>
   );
 }

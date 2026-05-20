@@ -228,7 +228,8 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
               <div className="pt-4 pb-8 sm:pb-0">
                 <button 
                   type="submit"
-                  className="w-full bg-bloom-pink text-white font-black py-4 rounded-3xl shadow-xl shadow-bloom-pink/20 hover:brightness-105 active:scale-[0.98] transition-all"
+                  disabled={formData.title.trim().length === 0}
+                  className="w-full bg-bloom-pink text-white font-black py-4 rounded-3xl shadow-xl shadow-bloom-pink/20 hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100 transition-all cursor-pointer"
                 >
                   {task ? "Save Changes" : "Create Task"}
                 </button>

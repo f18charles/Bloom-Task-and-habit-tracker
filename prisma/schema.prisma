@@ -19,12 +19,14 @@ model User {
   habits       Habit[]
   badges       Badge[]
   googleToken  GoogleToken?
+  events       Event[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Task {
   id             String    @id @default(cuid())
   userId         String
-  user           User      @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   title          String
   description    String?
   status         String    @default("TODO") // TODO, IN_PROGRESS, DONE
@@ -53,7 +55,7 @@ model Subtask {
 model GoogleToken {
   id           String   @id @default(cuid())
   userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken  String
   refreshToken String
   expiresAt    DateTime
@@ -63,7 +65,7 @@ model GoogleToken {
 model Habit {
   id           String    @id @default(cuid())
   userId       String
-  user         User      @relation(fields: [userId], references: [id])
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   title        String
   frequency    String    @default("DAILY") // DAILY, WEEKLY
   reminderTime String?
@@ -76,14 +78,37 @@ model Habit {
 model HabitLog {
   id          String   @id @default(cuid())
   habitId     String
-  habit       Habit    @relation(fields: [habitId], references: [id])
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
 }
 
 model Badge {
   id       String   @id @default(cuid())
   userId   String
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type     String // e.g., "7_DAY_STREAK", "50_TASKS"
   earnedAt DateTime @default(now())
+}
+
+model Event {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  startTime     DateTime
+  endTime       DateTime?
+  allDay        Boolean   @default(false)
+  googleEventId String?   @unique
+  isFromGoogle  Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
 }

@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { prisma } from "../lib/prisma.ts";
-import { Task } from "@prisma/client";
+import { Task, Event } from "@prisma/client";
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "PASTE_YOUR_CLIENT_ID_HERE";
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "PASTE_YOUR_CLIENT_SECRET_HERE";
@@ -84,6 +84,60 @@ export async function syncTaskToGoogle(userId: string, task: Task) {
   }
 }
 
+export async function syncEventToGoogle(userId: string, appEvent: Event) {
+  const auth = await getAuthenticatedClient(userId);
+  if (!auth || !appEvent.startTime) return;
+
+  const calendar = google.calendar({ version: "v3", auth });
+
+  let startVal: any = {};
+  let endVal: any = {};
+
+  if (appEvent.allDay) {
+    startVal = { date: appEvent.startTime.toISOString().split('T')[0] };
+    endVal = { 
+      date: appEvent.endTime 
+        ? appEvent.endTime.toISOString().split('T')[0] 
+        : appEvent.startTime.toISOString().split('T')[0] 
+    };
+  } else {
+    startVal = { dateTime: appEvent.startTime.toISOString() };
+    endVal = { 
+      dateTime: appEvent.endTime 
+        ? appEvent.endTime.toISOString() 
+        : new Date(appEvent.startTime.getTime() + 60 * 60 * 1000).toISOString() 
+    };
+  }
+
+  const googleEvent = {
+    summary: appEvent.title,
+    description: appEvent.description || "",
+    start: startVal,
+    end: endVal,
+  };
+
+  try {
+    if (appEvent.googleEventId) {
+      await calendar.events.update({
+        calendarId: "primary",
+        eventId: appEvent.googleEventId,
+        requestBody: googleEvent,
+      });
+    } else {
+      const res = await calendar.events.insert({
+        calendarId: "primary",
+        requestBody: googleEvent,
+      });
+      await prisma.event.update({
+        where: { id: appEvent.id },
+        data: { googleEventId: res.data.id },
+      });
+    }
+  } catch (error) {
+    console.error("Error syncing event to Google Calendar:", error);
+  }
+}
+
 export async function syncFromGoogle(userId: string) {
   const auth = await getAuthenticatedClient(userId);
   if (!auth) return;
@@ -101,21 +155,24 @@ export async function syncFromGoogle(userId: string) {
       orderBy: "startTime",
     });
 
-    const events = res.data.items || [];
-    for (const event of events) {
+    const googleEvents = res.data.items || [];
+    for (const gEvent of googleEvents) {
       // Check if event already exists in our DB
-      const existingTask = await prisma.task.findFirst({
-        where: { googleEventId: event.id! },
+      const existingEvent = await prisma.event.findFirst({
+        where: { googleEventId: gEvent.id! },
       });
 
-      if (!existingTask && event.summary) {
-        await prisma.task.create({
+      if (!existingEvent && gEvent.summary) {
+        await prisma.event.create({
           data: {
             userId,
-            title: event.summary,
-            description: event.description,
-            dueDate: event.start?.dateTime ? new Date(event.start.dateTime) : (event.start?.date ? new Date(event.start.date) : null),
-            googleEventId: event.id,
+            title: gEvent.summary,
+            description: gEvent.description,
+            startTime: gEvent.start?.dateTime ? new Date(gEvent.start.dateTime) : (gEvent.start?.date ? new Date(gEvent.start.date) : new Date()),
+            endTime: gEvent.end?.dateTime ? new Date(gEvent.end.dateTime) : (gEvent.end?.date ? new Date(gEvent.end.date) : null),
+            allDay: !!gEvent.start?.date,
+            googleEventId: gEvent.id,
+            isFromGoogle: true,
           },
         });
       }

@@ -8,9 +8,11 @@ import Progress from "./pages/Progress.tsx";
 import Calendar from "./pages/Calendar.tsx";
 import Settings from "./pages/Settings.tsx";
 import AuthPage from "./pages/Auth.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import { useAuthStore } from "./store/useAuthStore.ts";
 import { useNotifications } from "./hooks/useNotifications.ts";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
+import ToastContainer from "./components/Toast.tsx";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
@@ -35,10 +37,15 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route 
           path="/auth" 
           element={user ? <Navigate to="/" /> : <AuthPage />} 
+        />
+        <Route 
+          path="/reset-password" 
+          element={<ResetPassword />} 
         />
         
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
