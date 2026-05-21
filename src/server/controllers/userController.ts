@@ -29,18 +29,22 @@ export const getStats = async (req: AuthRequest, res: Response) => {
 
     // Points history for the last 7 days
     const pointsHistory = [];
+    const taskHistory = [];
+    const habitHistory = [];
     for (let i = 6; i >= 0; i--) {
       const date = subDays(new Date(), i);
       const start = startOfDay(date);
       const end = new Date(start);
       end.setHours(23, 59, 59, 999);
 
-      const taskPoints = await prisma.task.aggregate({
+      const taskStats = await prisma.task.aggregate({
         where: {
           userId,
+          status: "DONE",
           completedAt: { gte: start, lte: end }
         },
-        _sum: { points: true }
+        _sum: { points: true },
+        _count: { id: true }
       });
 
       const habitPoints = await prisma.habitLog.findMany({
@@ -52,11 +56,25 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       });
 
       const totalHabitPoints = habitPoints.reduce((sum, log) => sum + (log.habit.points || 0), 0);
-      const totalPoints = (taskPoints._sum.points || 0) + totalHabitPoints;
+      const totalPoints = (taskStats._sum.points || 0) + totalHabitPoints;
+      const tasksCount = taskStats._count.id || 0;
+      const habitsCount = habitPoints.length;
+
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
 
       pointsHistory.push({
-        name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        name: dayName,
         points: totalPoints
+      });
+
+      taskHistory.push({
+        day: dayName,
+        count: tasksCount
+      });
+
+      habitHistory.push({
+        day: dayName,
+        count: habitsCount
       });
     }
 
@@ -67,7 +85,9 @@ export const getStats = async (req: AuthRequest, res: Response) => {
         habitsActive: user?._count.habits || 0,
         badgesEarned: user?._count.badges || 0,
         recentActivity: recentTasks,
-        pointsHistory
+        pointsHistory,
+        taskHistory,
+        habitHistory
       }
     });
   } catch (error) {

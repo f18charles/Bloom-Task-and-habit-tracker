@@ -19,20 +19,34 @@ import { motion } from "motion/react";
 
 export default function Progress() {
   const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/users/stats").then(res => setStats(res.data.data));
+    api.get("/users/stats")
+      .then(res => {
+        setStats(res.data.data);
+      })
+      .catch(err => {
+        console.error("Failed to fetch statistics", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
-  const habitData = [
-    { day: "Mon", count: 3 },
-    { day: "Tue", count: 4 },
-    { day: "Wed", count: 2 },
-    { day: "Thu", count: 5 },
-    { day: "Fri", count: 4 },
-    { day: "Sat", count: 3 },
-    { day: "Sun", count: 5 },
-  ];
+  if (isLoading || !stats) {
+    return (
+      <div className="p-8">
+        <div className="animate-pulse space-y-4 bloom-card p-8">
+          <div className="h-20 bg-slate-100 dark:bg-slate-700/50 rounded-2xl w-full"></div>
+          <div className="h-40 bg-slate-50 dark:bg-slate-700/50 rounded-2xl w-full"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const taskData = stats.taskHistory || [];
+  const habitData = stats.habitHistory || [];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -43,10 +57,10 @@ export default function Progress() {
         transition={{ delay: 0.1 }}
         className="bloom-card p-6 sm:p-8"
       >
-        <h3 className="text-xl font-bold text-slate-800 mb-8">Tasks Completed</h3>
+        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-8">Tasks Completed</h3>
         <div className="h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={habitData}>
+            <LineChart data={taskData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
               <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
@@ -71,7 +85,7 @@ export default function Progress() {
         transition={{ delay: 0.2 }}
         className="bloom-card p-6 sm:p-8"
       >
-        <h3 className="text-xl font-bold text-slate-800 mb-8">Habit Consistency</h3>
+        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-8">Habit Consistency</h3>
         <div className="h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={habitData}>

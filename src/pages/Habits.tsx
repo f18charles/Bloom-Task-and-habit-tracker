@@ -38,9 +38,44 @@ export default function Habits() {
   };
 
   const calculateStreak = (habit: any) => {
-    // This is a simplified streak calculation
     if (!habit.logs || habit.logs.length === 0) return 0;
-    return habit.logs.length; // Actually should check consecutive days
+    
+    // Create a set of formatted dates that have logs
+    const loggedDates = new Set(
+      habit.logs.map((log: any) => format(new Date(log.completedAt), 'yyyy-MM-dd'))
+    );
+    
+    let streak = 0;
+    let checkDate = new Date(); // Start checking from today
+    
+    const todayStr = format(checkDate, 'yyyy-MM-dd');
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+    
+    // If there is no log for today and no log for yesterday, then streak is 0
+    if (!loggedDates.has(todayStr) && !loggedDates.has(yesterdayStr)) {
+      return 0;
+    }
+    
+    // If there is no log today but there is yesterday, start checking backwards from yesterday
+    if (!loggedDates.has(todayStr)) {
+      checkDate = yesterday;
+    }
+    
+    // Count consecutive days going backwards
+    while (true) {
+      const formatted = format(checkDate, 'yyyy-MM-dd');
+      if (loggedDates.has(formatted)) {
+        streak++;
+        // Go to previous day
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
   };
 
   const completionRate = habits.length > 0 
