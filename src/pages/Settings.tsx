@@ -11,13 +11,9 @@ export default function Settings() {
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTheme, setActiveTheme] = useState<'light' | 'dark' | 'system'>('system');
 
   useEffect(() => {
     fetchCalendarStatus();
-    
-    const storedTheme = (localStorage.getItem('bloom-theme') as 'light' | 'dark' | 'system') || 'system';
-    setActiveTheme(storedTheme);
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
@@ -82,20 +78,6 @@ export default function Settings() {
     } catch (error) {
       console.error("Disconnect failed");
     }
-  };
-
-  const applyTheme = (theme: 'light' | 'dark' | 'system') => {
-    localStorage.setItem('bloom-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      // system
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', prefersDark);
-    }
-    setActiveTheme(theme);
   };
 
   if (isLoading) return <div className="p-8"><div className="animate-pulse space-y-4 bloom-card p-8"><div className="h-20 bg-slate-100 dark:bg-slate-700 rounded-2xl w-full"></div><div className="h-40 bg-slate-50 dark:bg-slate-700 rounded-2xl w-full"></div></div></div>;
@@ -198,32 +180,6 @@ export default function Settings() {
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Appearance</h2>
-        <div className="bloom-card p-6 sm:p-8">
-          <p className="text-sm text-slate-500 dark:text-slate-300 mb-6 font-medium">Choose how Bloom looks on your device.</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            {(["light", "system", "dark"] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => {
-                  applyTheme(t);
-                }}
-                className={cn(
-                  "flex-1 p-4 rounded-2xl font-bold text-sm uppercase tracking-wider transition-all duration-200 border cursor-pointer",
-                  activeTheme === t
-                    ? "bg-bloom-pink border-bloom-pink text-white shadow-xl shadow-bloom-pink/20"
-                    : "bg-slate-50 dark:bg-slate-700/50 border-slate-100/60 dark:border-slate-600/30 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                )}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
         </div>
       </section>
     </div>
