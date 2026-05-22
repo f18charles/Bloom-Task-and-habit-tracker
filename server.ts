@@ -35,6 +35,7 @@ async function startServer() {
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     skip: (req) => !!req.headers.authorization,
+    validate: false,
   });
 
   app.use("/api/auth/login", authLimiter);
