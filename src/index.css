@@ -6,13 +6,13 @@
 @theme {
   --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
   
-  --color-bloom-pink-light: #fce7f3;
-  --color-bloom-pink: #f9a8c9;
-  --color-bloom-green-light: #dcfce7;
-  --color-bloom-green: #86efac;
-  --color-bloom-dark-green: #166534;
-  --color-bloom-purple: #c026d3;
-  --color-bloom-bg: #fdf2f8;
+  --color-bloom-pink-light: #f1f5f9;
+  --color-bloom-pink: #1e293b;
+  --color-bloom-green-light: #ecfdf5;
+  --color-bloom-green: #10b981;
+  --color-bloom-dark-green: #064e3b;
+  --color-bloom-purple: #4f46e5;
+  --color-bloom-bg: #f8fafc;
 }
 
 @layer base {
@@ -22,7 +22,7 @@
 }
 
 .bloom-card {
-  @apply bg-white rounded-[2rem] shadow-sm border border-[#fce7f3] overflow-hidden transition-all duration-300 dark:bg-slate-800 dark:border-slate-700;
+  @apply bg-white rounded-[2rem] shadow-sm border border-[#e2e8f0] overflow-hidden transition-all duration-300 dark:bg-slate-800 dark:border-slate-700;
 }
 
 .bloom-btn-primary {

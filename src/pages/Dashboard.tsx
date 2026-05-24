@@ -8,7 +8,7 @@ import {
   Calendar as CalendarIcon,
   Trophy,
   Zap,
-  Flower
+  Sparkles
 } from "lucide-react";
 import { motion } from "motion/react";
 import api from "../api/axios.ts";
@@ -97,7 +97,7 @@ export default function Dashboard() {
          <div className="bg-bloom-green rounded-[2rem] p-6 sm:p-8 text-bloom-dark-green shadow-md flex flex-col justify-center min-h-[140px] sm:min-h-[160px]">
            <div className="space-y-2">
               <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Daily Habits</span>
-              <h4 className="text-2xl sm:text-3xl font-black">Daily Rituals</h4>
+              <h4 className="text-2xl sm:text-3xl font-black">Daily habits</h4>
               <p className="text-sm opacity-90">
                 {pendingHabitsCount > 0 
                   ? `You have ${pendingHabitsCount} habits remaining to log today.` 
@@ -205,8 +205,8 @@ export default function Dashboard() {
                  </>
                ) : upcomingTasks.length === 0 ? (
                  <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-bloom-bg/30 dark:bg-slate-800/20 rounded-[2rem] border border-bloom-pink/10 dark:border-slate-700/30 p-8">
-                    <Flower className="w-14 h-14 text-bloom-pink animate-pulse mb-4" />
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Welcome to Bloom 🌸</h3>
+                    <Sparkles className="w-14 h-14 text-bloom-pink animate-pulse mb-4" />
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Welcome to Bloom ✨</h3>
                     <p className="text-sm text-slate-400 dark:text-slate-300 max-w-sm mx-auto mb-4 font-medium">Start organizing your workspace by adding your first task.</p>
                     <div className="flex items-center justify-center gap-4">
                       <button type="button" onClick={openAddModal} className="bloom-btn-primary px-6 py-2 text-sm font-bold rounded-xl cursor-pointer">Add First Task</button>

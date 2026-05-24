@@ -20,7 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useTaskStore, Task } from "../store/useTaskStore.ts";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2, Calendar, LayoutList, Clock, Flower } from "lucide-react";
+import { GripVertical, Plus, Trash2, Calendar, LayoutList, Clock } from "lucide-react";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { motion } from "motion/react";
 import { cn } from "../lib/utils.ts";
@@ -321,7 +321,7 @@ export default function Kanban() {
         </div>
       ) : tasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-slate-800/40 rounded-[3rem] border border-bloom-pink/10 dark:border-slate-700/30 max-w-lg mx-auto my-12 shadow-sm">
-          <Flower className="w-16 h-16 text-bloom-pink mb-4 animate-pulse" />
+          <LayoutList className="w-16 h-16 text-bloom-pink mb-4 animate-pulse" />
           <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">No tasks yet</h3>
           <p className="text-sm text-slate-400 dark:text-slate-300 mb-6 font-medium">Start by adding your first task to see it on the Kanban board.</p>
           <button 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Flower, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
+import { Sparkles, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 import api from "../api/axios.ts";
 import { useToastStore } from "../store/useToastStore.ts";
@@ -64,7 +64,7 @@ export default function ResetPassword() {
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-bloom-pink rounded-3xl grid place-items-center mb-4 rotate-3 shadow-lg">
-            <Flower className="text-white w-8 h-8 sm:w-10 sm:h-10" />
+            <Sparkles className="text-white w-8 h-8 sm:w-10 sm:h-10" />
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">Bloom</h2>
           <p className="text-slate-400 mt-1">Set your new password</p>

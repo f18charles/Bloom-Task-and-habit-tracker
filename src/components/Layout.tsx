@@ -8,7 +8,7 @@ import {
   BarChart3, 
   Settings as SettingsIcon,
   LogOut,
-  Flower,
+  Sparkles,
   Flame,
   Award,
   Sun,
@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen grid place-items-center bg-bloom-pink-light">
-        <Flower className="w-12 h-12 text-bloom-pink animate-spin" />
+        <Sparkles className="w-12 h-12 text-bloom-pink animate-spin" />
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <aside className="w-64 bg-white/60 dark:bg-slate-800/60 border-r border-bloom-pink/30 dark:border-slate-800 flex flex-col fixed h-full backdrop-blur-md hidden lg:flex z-50">
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-bloom-green dark:bg-slate-700 rounded-xl grid place-items-center shadow-sm">
-            <Flower className="text-bloom-dark-green dark:text-bloom-green w-6 h-6" />
+            <Sparkles className="text-bloom-dark-green dark:text-bloom-green w-5 h-5" />
           </div>
           <span className="text-2xl font-bold text-bloom-purple dark:text-[#f8a5c2] tracking-tight">
             Bloom
@@ -113,13 +113,13 @@ export default function Layout({ children }: { children: ReactNode }) {
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center justify-between w-full md:w-auto">
             <div className="lg:hidden w-10 h-10 bg-bloom-green dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-sm">
-               <Flower className="text-bloom-dark-green dark:text-bloom-green w-6 h-6" />
+               <Sparkles className="text-bloom-dark-green dark:text-bloom-green w-5 h-5" />
             </div>
             <div className="flex flex-col items-start md:items-start ml-3 md:ml-0">
               <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">
-                Hi, {user.displayName}! 🌸
+                Hi, {user.displayName}! ✨
               </h1>
-              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">You're blooming today.</p>
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">Keep up the great progress.</p>
             </div>
           </div>
 
