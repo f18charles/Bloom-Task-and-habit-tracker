@@ -8,7 +8,7 @@ import { setupBackend } from "./src/server/index.ts";
 import { setupCronJobs } from "./src/server/cron.ts";
 
 if (!process.env.JWT_SECRET) {
-  throw new Error("FATAL: JWT_SECRET environment variable is not set.");
+  console.warn("⚠️ WARNING: JWT_SECRET environment variable is not set. Falling back to a default development secret key.");
 }
 
 async function startServer() {
