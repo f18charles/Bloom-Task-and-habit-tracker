@@ -90,7 +90,7 @@ export default function Habits() {
           <div className="relative z-10">
             <Target className="w-8 h-8 mb-4 opacity-80" />
             <h3 className="text-4xl font-black mb-1">{Math.round(completionRate)}%</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Rituals Completed Today</p>
+            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">habits Completed Today</p>
           </div>
           <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">%</div>
         </div>
@@ -98,7 +98,7 @@ export default function Habits() {
           <div className="relative z-10">
             <Trophy className="w-8 h-8 mb-4 opacity-80" />
             <h3 className="text-4xl font-black mb-1">{habits.length}</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Active Rituals</p>
+            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Active habits</p>
           </div>
           <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">
             <Activity className="w-24 h-24" />
@@ -108,7 +108,7 @@ export default function Habits() {
 
       <div className="flex justify-between items-center px-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Your Rituals</h2>
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Your habits</h2>
           <p className="text-slate-400 font-medium">Small wins lead to big changes.</p>
         </div>
         <button 
@@ -165,7 +165,7 @@ export default function Habits() {
                   disabled={newHabit.title.trim().length === 0}
                   className="bg-bloom-pink text-white font-bold px-10 py-3 rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all cursor-pointer"
                 >
-                  Start Ritual
+                  Start habit
                 </button>
               </div>
             </form>
@@ -239,7 +239,7 @@ export default function Habits() {
 
                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Ritual</span>
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">habit</span>
                     <span className="text-sm font-bold text-slate-500">Scheduled</span>
                   </div>
                   <button 
@@ -275,7 +275,7 @@ export default function Habits() {
              <div className="w-24 h-24 bg-white rounded-full grid place-items-center mx-auto mb-6 shadow-xl shadow-bloom-pink/10">
                 <Target className="w-10 h-10 text-bloom-pink" />
              </div>
-             <h3 className="text-2xl font-black text-slate-800">No rituals yet</h3>
+             <h3 className="text-2xl font-black text-slate-800">No habits yet</h3>
              <p className="text-slate-400 font-medium max-w-sm mx-auto mt-2">
                Bloom starts with the small habits you keep every day. What's your first goal?
              </p>
