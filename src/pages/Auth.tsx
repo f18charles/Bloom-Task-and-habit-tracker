@@ -21,6 +21,16 @@ export default function AuthPage() {
   
   const { login, register } = useAuthStore();
 
+  const formatError = (err: any, fallback: string): string => {
+    const errorObj = err.response?.data?.error;
+    if (!errorObj) return fallback;
+    if (typeof errorObj === "string") return errorObj;
+    if (typeof errorObj === "object" && errorObj !== null) {
+      return (errorObj as any).message || (errorObj as any).error || JSON.stringify(errorObj);
+    }
+    return fallback;
+  };
+
   const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -30,7 +40,7 @@ export default function AuthPage() {
       const { data } = await api.post("/auth/forgot-password", { email: forgotEmail });
       setSuccessMsg(data.message || "Reset link has been generated!");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to request password reset.");
+      setError(formatError(err, "Failed to request password reset."));
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +67,7 @@ export default function AuthPage() {
         });
         setFieldErrors(errors);
       } else {
-        setError(err.response?.data?.error || "Authentication failed");
+        setError(formatError(err, "Authentication failed"));
       }
     }
   };

@@ -47,7 +47,16 @@ export default function ResetPassword() {
         navigate("/auth");
       }, 3000);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to update password. Link might be expired.");
+      const errorObj = err.response?.data?.error;
+      let displayError = "Failed to update password. Link might be expired.";
+      if (errorObj) {
+        if (typeof errorObj === "string") {
+          displayError = errorObj;
+        } else if (typeof errorObj === "object" && errorObj !== null) {
+          displayError = (errorObj as any).message || (errorObj as any).error || JSON.stringify(errorObj);
+        }
+      }
+      setError(displayError);
     } finally {
       setLoading(false);
     }
