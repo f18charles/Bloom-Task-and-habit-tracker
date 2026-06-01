@@ -21,8 +21,17 @@ export const register = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
     res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName, points: user.points }, token } });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to register" });
+  } catch (error: any) {
+    console.error("🔴 Registration error:", error);
+    let errorMessage = "Failed to register";
+    if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
+      errorMessage = "Database is not initialized. Please run 'npx prisma db push' inside your terminal or deployment pipeline to generate tables.";
+    } else if (error?.code?.startsWith("P10") || error?.message?.includes("Can't reach database server")) {
+      errorMessage = "Cannot connect to the database. Please check your DATABASE_URL environment variable and make sure your Postgres server allows connections.";
+    } else if (error?.message) {
+      errorMessage = `Registration failed: ${error.message}`;
+    }
+    res.status(500).json({ error: errorMessage });
   }
 };
 
@@ -36,8 +45,17 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
     res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName, points: user.points }, token } });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to login" });
+  } catch (error: any) {
+    console.error("🔴 Login error:", error);
+    let errorMessage = "Failed to login";
+    if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
+      errorMessage = "Database is not initialized. Please run 'npx prisma db push' inside your terminal or deployment pipeline to generate tables.";
+    } else if (error?.code?.startsWith("P10") || error?.message?.includes("Can't reach database server")) {
+      errorMessage = "Cannot connect to the database. Please check your DATABASE_URL environment variable and make sure your Postgres server allows connections.";
+    } else if (error?.message) {
+      errorMessage = `Login failed: ${error.message}`;
+    }
+    res.status(500).json({ error: errorMessage });
   }
 };
 
