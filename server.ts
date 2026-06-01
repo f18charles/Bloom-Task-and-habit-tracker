@@ -11,40 +11,42 @@ if (!process.env.JWT_SECRET) {
   console.warn("⚠️ WARNING: JWT_SECRET environment variable is not set. Falling back to a default development secret key.");
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+const app = express();
+const PORT = 3000;
 
-  // Trust the first proxy (required for rate limiting work correctly behind a reverse proxy)
-  app.set("trust proxy", 1);
+// Trust the first proxy (required for rate limiting work correctly behind a reverse proxy)
+app.set("trust proxy", 1);
 
-  // Middleware for JSON bodies
-  app.use(express.json());
+// Middleware for JSON bodies
+app.use(express.json());
 
-  // Rate Limiting
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
-    // Key by email so one account's lockout doesn't affect others.
-    // Fall back to IP only if email is missing (malformed request).
-    keyGenerator: (req) => {
-      const email = req.body?.email?.toLowerCase?.()?.trim();
-      return email || req.ip || "unknown";
-    },
-    message: { error: "Too many login attempts for this account. Please try again in 15 minutes." },
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    skip: (req) => !!req.headers.authorization,
-    validate: false,
-  });
+// Rate Limiting
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  // Key by email so one account's lockout doesn't affect others.
+  // Fall back to IP only if email is missing (malformed request).
+  keyGenerator: (req) => {
+    const email = req.body?.email?.toLowerCase?.()?.trim();
+    return email || req.ip || "unknown";
+  },
+  message: { error: "Too many login attempts for this account. Please try again in 15 minutes." },
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: (req) => !!req.headers.authorization,
+  validate: false,
+});
 
-  app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/login", authLimiter);
 
-  // Setup Backend API routes
-  setupBackend(app);
-  
-  // Setup Background Jobs
-  setupCronJobs();
+// Setup Backend API routes
+setupBackend(app);
+
+async function initializeApp() {
+  // Setup Background Jobs (only if not on Vercel)
+  if (!process.env.VERCEL) {
+    setupCronJobs();
+  }
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
@@ -62,9 +64,16 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Bloom server running at http://0.0.0.0:${PORT}`);
-  });
+  // Only start listening on a PORT if not running in Vercel serverless environment
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Bloom server running at http://0.0.0.0:${PORT}`);
+    });
+  }
 }
 
-startServer();
+initializeApp().catch((err) => {
+  console.error("🔴 Express initialization failed:", err);
+});
+
+export default app;
