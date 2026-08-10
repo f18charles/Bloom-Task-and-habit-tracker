@@ -39,11 +39,12 @@ export default function Dashboard() {
   }).length;
 
   useEffect(() => {
-    fetchTasks();
-    fetchHabits();
+    fetchTasks().catch(() => {});
+    fetchHabits().catch(() => {});
     setStatsLoading(true);
     api.get("/users/stats")
       .then(res => setStats(res.data.data))
+      .catch(() => {})
       .finally(() => setStatsLoading(false));
   }, [fetchTasks, fetchHabits]);
 

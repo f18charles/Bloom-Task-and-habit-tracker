@@ -43,7 +43,6 @@ export const useEventStore = create<EventState>((set, get) => ({
       set({ events: [...get().events, data.data], isLoading: false });
     } catch (err: any) {
       set({ error: err.response?.data?.error || "Failed to create event", isLoading: false });
-      throw err;
     }
   },
   updateEvent: async (id, updates) => {
@@ -56,7 +55,6 @@ export const useEventStore = create<EventState>((set, get) => ({
       });
     } catch (err: any) {
       set({ error: err.response?.data?.error || "Failed to update event", isLoading: false });
-      throw err;
     }
   },
   deleteEvent: async (id) => {
@@ -69,7 +67,6 @@ export const useEventStore = create<EventState>((set, get) => ({
       });
     } catch (err: any) {
       set({ error: err.response?.data?.error || "Failed to delete event", isLoading: false });
-      throw err;
     }
   }
 }));

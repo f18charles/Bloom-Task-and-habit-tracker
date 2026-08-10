@@ -43,8 +43,8 @@ export default function Calendar() {
   const [syncToGoogle, setSyncToGoogle] = useState(true);
 
   useEffect(() => {
-    fetchEvents();
-    fetchTasks();
+    fetchEvents().catch(() => {});
+    fetchTasks().catch(() => {});
     checkGoogleConnection();
   }, [fetchEvents, fetchTasks]);
 

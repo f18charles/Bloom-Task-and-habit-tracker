@@ -23,24 +23,39 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   isLoading: false,
   fetchHabits: async () => {
     set({ isLoading: true });
-    const { data } = await api.get("/habits");
-    set({ habits: data.data, isLoading: false });
+    try {
+      const { data } = await api.get("/habits");
+      set({ habits: data.data || [], isLoading: false });
+    } catch {
+      set({ isLoading: false });
+    }
   },
   addHabit: async (habit) => {
-    const { data } = await api.post("/habits", habit);
-    set({ habits: [...get().habits, data.data] });
+    try {
+      const { data } = await api.post("/habits", habit);
+      set({ habits: [...get().habits, data.data] });
+    } catch {
+      // Handled via toast interceptor
+    }
   },
   logHabit: async (id) => {
-    const { data } = await api.post(`/habits/${id}/log`);
-    // Optimistic update or refetch
-    set({
-      habits: get().habits.map((h) => 
-        h.id === id ? { ...h, logs: [...(h.logs || []), data.data] } : h
-      )
-    });
+    try {
+      const { data } = await api.post(`/habits/${id}/log`);
+      set({
+        habits: get().habits.map((h) => 
+          h.id === id ? { ...h, logs: [...(h.logs || []), data.data] } : h
+        )
+      });
+    } catch {
+      // Handled via toast interceptor
+    }
   },
   deleteHabit: async (id) => {
-    await api.delete(`/habits/${id}`);
-    set({ habits: get().habits.filter((h) => h.id !== id) });
+    try {
+      await api.delete(`/habits/${id}`);
+      set({ habits: get().habits.filter((h) => h.id !== id) });
+    } catch {
+      // Handled via toast interceptor
+    }
   }
 }));

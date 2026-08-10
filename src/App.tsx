@@ -38,15 +38,24 @@ export default function App() {
 
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error("Unhandled promise rejection:", event.reason);
-      const message = typeof event.reason === "string" 
-        ? event.reason 
-        : event.reason?.message || "An unexpected asynchronous error occurred";
-      useToastStore.getState().addToast(message, "error");
+      // Prevent default console logging of unhandled rejections
+      if (typeof event.preventDefault === "function") {
+        event.preventDefault();
+      }
+      
+      const reason = event.reason;
+      if (!reason) return;
+
+      const message = typeof reason === "string" 
+        ? reason 
+        : reason?.message || reason?.response?.data?.error;
+
+      if (message && typeof message === "string" && !message.includes("canceled")) {
+        useToastStore.getState().addToast(message, "error");
+      }
     };
 
     const handleError = (event: ErrorEvent) => {
-      console.error("Uncaught window error:", event.error || event.message);
       if (event.message) {
         useToastStore.getState().addToast(event.message, "error");
       }

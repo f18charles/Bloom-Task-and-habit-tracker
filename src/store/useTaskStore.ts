@@ -36,21 +36,37 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   isLoading: false,
   fetchTasks: async () => {
     set({ isLoading: true });
-    const { data } = await api.get("/tasks");
-    set({ tasks: data.data, isLoading: false });
+    try {
+      const { data } = await api.get("/tasks");
+      set({ tasks: data.data || [], isLoading: false });
+    } catch {
+      set({ isLoading: false });
+    }
   },
   addTask: async (task) => {
-    const { data } = await api.post("/tasks", task);
-    set({ tasks: [...get().tasks, data.data] });
+    try {
+      const { data } = await api.post("/tasks", task);
+      set({ tasks: [...get().tasks, data.data] });
+    } catch {
+      // Handled via toast interceptor
+    }
   },
   updateTask: async (id, updates) => {
-    const { data } = await api.put(`/tasks/${id}`, updates);
-    set({
-      tasks: get().tasks.map((t) => (t.id === id ? data.data : t))
-    });
+    try {
+      const { data } = await api.put(`/tasks/${id}`, updates);
+      set({
+        tasks: get().tasks.map((t) => (t.id === id ? data.data : t))
+      });
+    } catch {
+      // Handled via toast interceptor
+    }
   },
   deleteTask: async (id) => {
-    await api.delete(`/tasks/${id}`);
-    set({ tasks: get().tasks.filter((t) => t.id !== id) });
+    try {
+      await api.delete(`/tasks/${id}`);
+      set({ tasks: get().tasks.filter((t) => t.id !== id) });
+    } catch {
+      // Handled via toast interceptor
+    }
   }
 }));
