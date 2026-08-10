@@ -80,26 +80,26 @@ export default function Settings() {
     }
   };
 
-  if (isLoading) return <div className="p-8"><div className="animate-pulse space-y-4 bloom-card p-8"><div className="h-20 bg-slate-100 dark:bg-slate-700 rounded-2xl w-full"></div><div className="h-40 bg-slate-50 dark:bg-slate-700 rounded-2xl w-full"></div></div></div>;
+  if (isLoading) return <div className="p-4 sm:p-8"><div className="animate-pulse space-y-4 bloom-card p-4 sm:p-8"><div className="h-16 bg-slate-100 dark:bg-slate-700 rounded-xl w-full"></div><div className="h-32 bg-slate-50 dark:bg-slate-700 rounded-xl w-full"></div></div></div>;
 
   return (
-    <div className="max-w-4xl space-y-8">
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Account Settings</h2>
-        <div className="bloom-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            <div className="w-16 h-16 rounded-3xl bg-bloom-pink flex items-center justify-center text-white text-2xl font-black shadow-lg shrink-0">
+    <div className="max-w-3xl space-y-4 sm:space-y-6">
+      <section className="space-y-3">
+        <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Account Settings</h2>
+        <div className="bloom-card p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-bloom-pink flex items-center justify-center text-white text-xl sm:text-2xl font-black shadow-md shrink-0">
               {user?.displayName[0]}
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white">{user?.displayName}</h3>
-              <p className="text-sm text-gray-400 dark:text-slate-300">{user?.email}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white truncate">{user?.displayName}</h3>
+              <p className="text-xs sm:text-sm text-gray-400 dark:text-slate-300 truncate">{user?.email}</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
+          <div className="flex items-center justify-end w-full sm:w-auto">
              <button 
                onClick={logout}
-               className="flex items-center justify-center gap-2 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 px-4 py-2 rounded-2xl transition-all flex-1 md:flex-none"
+               className="flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 px-3 py-2 sm:px-4 sm:py-2 rounded-xl transition-all w-full sm:w-auto cursor-pointer"
              >
                <LogOut className="w-4 h-4" /> Sign Out
              </button>
@@ -107,22 +107,22 @@ export default function Settings() {
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Connected Accounts</h2>
-        <div className="bloom-card p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4 w-full">
+      <section className="space-y-3">
+        <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Connected Accounts</h2>
+        <div className="bloom-card p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-4 w-full">
               <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shrink-0",
+                "w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-colors shrink-0",
                 isCalendarConnected 
                   ? "bg-bloom-pink-light text-bloom-pink dark:bg-bloom-pink/20" 
                   : "bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-300"
               )}>
-                <Calendar className="w-6 h-6" />
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-gray-800 dark:text-white">Google Calendar</h3>
-                <p className="text-sm text-gray-400 dark:text-slate-300 truncate">
+                <h3 className="text-sm sm:text-base font-bold text-gray-800 dark:text-white">Google Calendar</h3>
+                <p className="text-xs sm:text-sm text-gray-400 dark:text-slate-300 truncate">
                   {isCalendarConnected 
                     ? `Connected${lastSyncedAt ? ` • Last synced ${new Date(lastSyncedAt).toLocaleString()}` : ''}` 
                     : "Task syncing enabled"
@@ -132,18 +132,18 @@ export default function Settings() {
             </div>
 
             {isCalendarConnected ? (
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
                 <button 
                   onClick={handleSyncNow}
                   disabled={isSyncing}
-                  className="flex items-center justify-center gap-2 text-sm font-bold text-bloom-pink bg-bloom-pink-light dark:bg-bloom-pink/20 px-6 py-2.5 rounded-2xl transition-all disabled:opacity-50 w-full sm:w-auto cursor-pointer"
+                  className="flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-bloom-pink bg-bloom-pink-light dark:bg-bloom-pink/20 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl transition-all disabled:opacity-50 flex-1 sm:flex-none cursor-pointer"
                 >
-                  <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
+                  <RefreshCw className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", isSyncing && "animate-spin")} />
                   {isSyncing ? "Syncing..." : "Sync Now"}
                 </button>
                 <button 
                   onClick={handleDisconnect}
-                  className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors py-2 cursor-pointer"
+                  className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors py-2 px-2 cursor-pointer shrink-0"
                 >
                   Disconnect
                 </button>
@@ -151,7 +151,7 @@ export default function Settings() {
             ) : (
               <button 
                 onClick={handleConnectCalendar}
-                className="bg-bloom-pink text-white font-bold px-8 py-3 rounded-2xl shadow-lg shadow-bloom-pink/20 hover:brightness-105 transition-all w-full sm:w-auto cursor-pointer"
+                className="bg-bloom-pink text-white text-xs sm:text-sm font-bold px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl sm:rounded-2xl shadow-md shadow-bloom-pink/20 hover:brightness-105 transition-all w-full sm:w-auto cursor-pointer"
               >
                 Connect
               </button>
@@ -159,23 +159,23 @@ export default function Settings() {
           </div>
 
           {isCalendarConnected && (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-bloom-bg/50 dark:bg-slate-700/30 p-4 rounded-2xl border border-bloom-pink/10 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-bloom-green flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-4 h-4 text-bloom-dark-green dark:text-green-800" />
+            <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-bloom-bg/50 dark:bg-slate-700/30 p-3 sm:p-4 rounded-xl border border-bloom-pink/10 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-bloom-green flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-bloom-dark-green dark:text-green-800" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-bloom-dark-green dark:text-green-200 uppercase tracking-widest">Automatic Sync</p>
-                  <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">New tasks are pushed automatically.</p>
+                  <p className="text-[10px] font-bold text-bloom-dark-green dark:text-green-200 uppercase tracking-widest">Automatic Sync</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 mt-0.5">New tasks are pushed automatically.</p>
                 </div>
               </div>
-              <div className="bg-bloom-bg/50 dark:bg-slate-700/30 p-4 rounded-2xl border border-bloom-pink/10 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+              <div className="bg-bloom-bg/50 dark:bg-slate-700/30 p-3 sm:p-4 rounded-xl border border-bloom-pink/10 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-orange-600 dark:text-orange-300 uppercase tracking-widest">Two-Way Pull</p>
-                  <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">Events are synced from Google.</p>
+                  <p className="text-[10px] font-bold text-orange-600 dark:text-orange-300 uppercase tracking-widest">Two-Way Pull</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 mt-0.5">Events are synced from Google.</p>
                 </div>
               </div>
             </div>

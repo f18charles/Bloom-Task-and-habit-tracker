@@ -253,17 +253,17 @@ export default function Kanban() {
   };
 
   return (
-    <div className="h-[calc(100vh-180px)] flex flex-col gap-6">
+    <div className="min-h-[calc(100vh-160px)] flex flex-col gap-4 sm:gap-6">
       <TaskModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         task={selectedTask}
         defaultStatus={defaultStatus}
       />
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 sm:px-4 gap-3 sm:gap-6">
          <div>
-           <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Board</h2>
-           <p className="text-slate-400 dark:text-slate-300 text-sm">Visualize your progress.</p>
+           <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight">Board</h2>
+           <p className="text-slate-400 dark:text-slate-300 text-xs sm:text-sm">Visualize your progress.</p>
          </div>
          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-2xl p-1 shadow-sm border border-bloom-pink/10 dark:border-slate-700">
@@ -360,8 +360,8 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any)
   const { setNodeRef } = useDroppable({ id: col.id });
 
   return (
-    <div className="flex-1 flex flex-col gap-4 min-w-[300px] md:min-w-[320px]">
-      <div className="flex items-center justify-between px-4">
+    <div className="flex-1 flex flex-col gap-3 sm:gap-4 min-w-[270px] sm:min-w-[320px]">
+      <div className="flex items-center justify-between px-2 sm:px-4">
         <div className="flex items-center gap-3">
           <div className={cn("w-3 h-3 rounded-full shadow-sm", col.color)} />
           <h3 className="font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] text-[10px]">
@@ -379,7 +379,7 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any)
  
       <div 
         ref={setNodeRef}
-        className="flex-1 bg-bloom-bg/30 dark:bg-slate-800/20 border-2 border-white dark:border-slate-800/30 rounded-[2.5rem] p-6 space-y-4 overflow-y-auto"
+        className="flex-1 bg-bloom-bg/30 dark:bg-slate-800/20 border-2 border-white dark:border-slate-800/30 rounded-2xl sm:rounded-3xl p-3 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto"
       >
         {isLoading ? (
           <>

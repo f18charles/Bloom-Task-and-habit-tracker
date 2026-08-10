@@ -37,7 +37,7 @@ export async function sendDailyDigest(user: any, pendingTasks: any[], habitsToCo
     : "<p>All habits logged? Great job!</p>";
 
   const html = `
-    <h1>Good Morning, ${user.displayName}! 🌸</h1>
+    <h1>Good Morning, ${user.displayName}! </h1>
     <p>Here is your daily Bloom digest to keep you flourishing.</p>
     
     <h2>Today's Pending Tasks</h2>
@@ -52,7 +52,7 @@ export async function sendDailyDigest(user: any, pendingTasks: any[], habitsToCo
 
   await sendEmail({
     to: user.email,
-    subject: "Your Daily Bloom Digest 🌸",
+    subject: "Your Daily Bloom Digest ",
     html
   });
 }

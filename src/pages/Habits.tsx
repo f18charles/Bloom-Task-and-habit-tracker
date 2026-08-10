@@ -83,25 +83,25 @@ export default function Habits() {
     : 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 pb-20">
+    <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8 pb-12 sm:pb-20">
       {/* Stats Header */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-bloom-purple rounded-[2.5rem] p-8 text-white shadow-xl shadow-bloom-purple/20 relative overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-bloom-purple rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl shadow-bloom-purple/20 relative overflow-hidden">
           <div className="relative z-10">
-            <Target className="w-8 h-8 mb-4 opacity-80" />
-            <h3 className="text-4xl font-black mb-1">{Math.round(completionRate)}%</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">habits Completed Today</p>
+            <Target className="w-6 h-6 sm:w-8 sm:h-8 mb-2 sm:mb-4 opacity-80" />
+            <h3 className="text-2xl sm:text-4xl font-black mb-1">{Math.round(completionRate)}%</h3>
+            <p className="text-xs sm:text-sm font-bold opacity-70 uppercase tracking-widest">Habits Completed Today</p>
           </div>
-          <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">%</div>
+          <div className="absolute -right-4 -bottom-4 text-7xl sm:text-9xl font-black opacity-10">%</div>
         </div>
-        <div className="bg-bloom-green rounded-[2.5rem] p-8 text-bloom-dark-green shadow-xl shadow-bloom-green/20 relative overflow-hidden">
+        <div className="bg-bloom-green rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-bloom-dark-green shadow-xl shadow-bloom-green/20 relative overflow-hidden">
           <div className="relative z-10">
-            <Trophy className="w-8 h-8 mb-4 opacity-80" />
-            <h3 className="text-4xl font-black mb-1">{habits.length}</h3>
-            <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Active habits</p>
+            <Trophy className="w-6 h-6 sm:w-8 sm:h-8 mb-2 sm:mb-4 opacity-80" />
+            <h3 className="text-2xl sm:text-4xl font-black mb-1">{habits.length}</h3>
+            <p className="text-xs sm:text-sm font-bold opacity-70 uppercase tracking-widest">Active habits</p>
           </div>
-          <div className="absolute -right-4 -bottom-4 text-9xl font-black opacity-10">
-            <Activity className="w-24 h-24" />
+          <div className="absolute -right-4 -bottom-4 text-7xl sm:text-9xl font-black opacity-10">
+            <Activity className="w-20 h-20 sm:w-24 sm:h-24" />
           </div>
         </div>
       </div>

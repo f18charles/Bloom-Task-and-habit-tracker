@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Sparkles, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
+import { Flower2, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 import api from "../api/axios.ts";
 import { useToastStore } from "../store/useToastStore.ts";
@@ -65,17 +65,17 @@ export default function ResetPassword() {
   const isFormValid = password.length >= 6 && password === confirmPassword;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bloom-pink-light p-4">
+    <div className="min-h-screen flex items-center justify-center bg-bloom-pink-light p-3 sm:p-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] shadow-xl w-full max-w-md border-none"
+        className="bg-white p-5 sm:p-8 rounded-3xl shadow-xl w-full max-w-md border-none"
       >
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-bloom-pink rounded-3xl grid place-items-center mb-4 rotate-3 shadow-lg">
-            <Sparkles className="text-white w-8 h-8 sm:w-10 sm:h-10" />
+        <div className="flex flex-col items-center mb-6 sm:mb-8">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-bloom-pink rounded-2xl sm:rounded-3xl grid place-items-center mb-3 sm:mb-4 rotate-3 shadow-lg">
+            <Flower2 className="text-white w-6 h-6 sm:w-10 sm:h-10" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">Bloom</h2>
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">Bloom</h2>
           <p className="text-slate-400 mt-1">Set your new password</p>
         </div>
 

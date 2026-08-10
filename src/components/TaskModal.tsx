@@ -84,7 +84,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -96,7 +96,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bloom-card w-full max-w-lg bg-white border-none relative z-10 overflow-hidden h-full sm:h-auto max-h-screen sm:max-h-[90vh] flex flex-col"
+            className="bloom-card w-full max-w-lg bg-white dark:bg-slate-800 border-none relative z-10 overflow-hidden max-h-[92vh] flex flex-col p-4 sm:p-6 rounded-2xl sm:rounded-3xl"
           >
             <div className="p-4 sm:p-6 border-b border-slate-50 flex justify-between items-center bg-bloom-bg/30">
               <h2 className="text-xl font-bold text-gray-800">{task ? "Edit Task" : "New Task"}</h2>

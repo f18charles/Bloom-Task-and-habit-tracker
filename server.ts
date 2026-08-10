@@ -8,7 +8,7 @@ import { setupBackend } from "./src/server/index.ts";
 import { setupCronJobs } from "./src/server/cron.ts";
 
 if (!process.env.JWT_SECRET) {
-  console.warn("⚠️ WARNING: JWT_SECRET environment variable is not set. Falling back to a default development secret key.");
+  console.warn("️ WARNING: JWT_SECRET environment variable is not set. Falling back to a default development secret key.");
 }
 
 const app = express();
@@ -73,7 +73,7 @@ async function initializeApp() {
 }
 
 initializeApp().catch((err) => {
-  console.error("🔴 Express initialization failed:", err);
+  console.error(" Express initialization failed:", err);
 });
 
 export default app;

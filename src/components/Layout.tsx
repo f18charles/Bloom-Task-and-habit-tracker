@@ -8,7 +8,7 @@ import {
   BarChart3, 
   Settings as SettingsIcon,
   LogOut,
-  Sparkles,
+  Flower2,
   Flame,
   Award,
   Sun,
@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen grid place-items-center bg-bloom-pink-light">
-        <Sparkles className="w-12 h-12 text-bloom-pink animate-spin" />
+        <Flower2 className="w-12 h-12 text-bloom-pink animate-spin" />
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <aside className="w-64 bg-white/60 dark:bg-slate-800/60 border-r border-bloom-pink/30 dark:border-slate-800 flex flex-col fixed h-full backdrop-blur-md hidden lg:flex z-50">
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-bloom-green dark:bg-slate-700 rounded-xl grid place-items-center shadow-sm">
-            <Sparkles className="text-bloom-dark-green dark:text-bloom-green w-5 h-5" />
+            <Flower2 className="text-bloom-dark-green dark:text-bloom-green w-5 h-5" />
           </div>
           <span className="text-2xl font-bold text-bloom-purple dark:text-[#f8a5c2] tracking-tight">
             Bloom
@@ -108,18 +108,18 @@ export default function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 p-4 md:p-8 pb-24 lg:pb-8">
+      <main className="flex-1 lg:ml-64 p-3 sm:p-6 md:p-8 pb-20 lg:pb-8">
         {/* Top Navbar */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <header className="flex flex-col md:flex-row md:items-center justify-between mb-4 sm:mb-8 gap-3 sm:gap-4">
           <div className="flex items-center justify-between w-full md:w-auto">
-            <div className="lg:hidden w-10 h-10 bg-bloom-green dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-sm">
-               <Sparkles className="text-bloom-dark-green dark:text-bloom-green w-5 h-5" />
+            <div className="lg:hidden w-8 h-8 sm:w-10 sm:h-10 bg-bloom-green dark:bg-slate-700 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm">
+               <Flower2 className="text-bloom-dark-green dark:text-bloom-green w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="flex flex-col items-start md:items-start ml-3 md:ml-0">
-              <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">
-                Hi, {user.displayName}! ✨
+            <div className="flex flex-col items-start md:items-start ml-2 sm:ml-3 md:ml-0">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white">
+                Hi, {user.displayName}!
               </h1>
-              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">Keep up the great progress.</p>
+              <p className="text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-slate-400">Keep up the great progress.</p>
             </div>
           </div>
 
@@ -132,7 +132,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg border-t border-bloom-pink/10 dark:border-slate-700 px-2 py-3 flex justify-around items-center z-50">
+      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg border-t border-bloom-pink/10 dark:border-slate-700 px-1 py-1.5 sm:px-2 sm:py-2 flex justify-around items-center z-50">
         {navItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -141,24 +141,24 @@ export default function Layout({ children }: { children: ReactNode }) {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 p-2 rounded-xl transition-all",
-                isActive ? "text-bloom-pink bg-bloom-pink/5 dark:bg-bloom-pink/10" : "text-slate-400 dark:text-slate-300"
+                "flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all",
+                isActive ? "text-bloom-pink bg-bloom-pink/10 dark:bg-bloom-pink/20 font-semibold" : "text-slate-400 dark:text-slate-300"
               )}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-bold">{item.name}</span>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-[9px] sm:text-[10px] font-bold">{item.name}</span>
             </Link>
           );
         })}
         <Link
           to="/settings"
           className={cn(
-            "flex flex-col items-center gap-1 p-2 rounded-xl transition-all",
-            location.pathname === "/settings" ? "text-bloom-pink bg-bloom-pink/5 dark:bg-bloom-pink/10" : "text-slate-400 dark:text-slate-300"
+            "flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all",
+            location.pathname === "/settings" ? "text-bloom-pink bg-bloom-pink/10 dark:bg-bloom-pink/20 font-semibold" : "text-slate-400 dark:text-slate-300"
           )}
         >
-          <SettingsIcon className="w-5 h-5" />
-          <span className="text-[10px] font-bold">Settings</span>
+          <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">Settings</span>
         </Link>
       </nav>
     </div>

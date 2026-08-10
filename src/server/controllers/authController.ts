@@ -22,7 +22,7 @@ export const register = async (req: Request, res: Response) => {
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
     res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName, points: user.points }, token } });
   } catch (error: any) {
-    console.error("🔴 Registration error:", error);
+    console.error(" Registration error:", error);
     let errorMessage = "Failed to register";
     if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
       errorMessage = "Database is not initialized. Please run 'npx prisma db push' inside your terminal or deployment pipeline to generate tables.";
@@ -46,7 +46,7 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
     res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName, points: user.points }, token } });
   } catch (error: any) {
-    console.error("🔴 Login error:", error);
+    console.error(" Login error:", error);
     let errorMessage = "Failed to login";
     if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
       errorMessage = "Database is not initialized. Please run 'npx prisma db push' inside your terminal or deployment pipeline to generate tables.";

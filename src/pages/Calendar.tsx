@@ -184,9 +184,9 @@ export default function Calendar() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[3rem] shadow-sm border border-bloom-pink/10 overflow-hidden relative">
+      <div className="bg-white dark:bg-slate-800/40 rounded-2xl sm:rounded-3xl shadow-sm border border-bloom-pink/10 dark:border-slate-700/50 overflow-hidden relative">
         {(eventsLoading || tasksLoading) && (
-          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px] flex items-center justify-center z-10">
             <div className="animate-pulse flex space-x-2">
               <div className="w-3 h-3 bg-bloom-pink rounded-full"></div>
               <div className="w-3 h-3 bg-bloom-pink rounded-full"></div>
@@ -195,9 +195,9 @@ export default function Calendar() {
           </div>
         )}
 
-        <div className="grid grid-cols-7 border-b border-bloom-pink/10 bg-bloom-bg/30">
+        <div className="grid grid-cols-7 border-b border-bloom-pink/10 dark:border-slate-700/50 bg-bloom-bg/30 dark:bg-slate-800/60">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-bloom-pink/60">
+            <div key={day} className="py-2 sm:py-4 text-center text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-[0.2em] text-bloom-pink/60 dark:text-bloom-pink">
               {day}
             </div>
           ))}
@@ -215,15 +215,15 @@ export default function Calendar() {
                 key={day.toString()} 
                 onClick={() => openAddModal(day)}
                 className={clsx(
-                  "min-h-[140px] p-2 border-r border-b border-bloom-pink/5 transition-all hover:bg-bloom-bg/30 cursor-pointer group flex flex-col justify-between",
-                  !isCurrentMonth && "bg-slate-50/30 opacity-40"
+                  "min-h-[70px] sm:min-h-[120px] p-1 sm:p-2 border-r border-b border-bloom-pink/5 dark:border-slate-700/30 transition-all hover:bg-bloom-bg/30 dark:hover:bg-slate-700/30 cursor-pointer group flex flex-col justify-between",
+                  !isCurrentMonth && "bg-slate-50/30 dark:bg-slate-900/20 opacity-40"
                 )}
               >
-                <div className="flex flex-col h-full gap-2 justify-between">
+                <div className="flex flex-col h-full gap-1 sm:gap-2 justify-between">
                   <div>
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-1 sm:mb-2">
                       <span className={clsx(
-                        "text-sm font-black flex items-center justify-center w-7 h-7 rounded-xl transition-all",
+                        "text-xs sm:text-sm font-black flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl transition-all",
                         isToday ? "bg-bloom-pink text-white shadow-lg shadow-bloom-pink/20" : "text-slate-400 group-hover:text-bloom-pink"
                       )}>
                         {format(day, 'd')}
@@ -267,7 +267,7 @@ export default function Calendar() {
                           )}
                           title={`Task: ${task.title} (${task.status})`}
                         >
-                          ✓ {task.title}
+                           {task.title}
                         </div>
                       ))}
                     </div>

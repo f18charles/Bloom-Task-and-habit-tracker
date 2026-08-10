@@ -8,7 +8,7 @@ import {
   Calendar as CalendarIcon,
   Trophy,
   Zap,
-  Sparkles
+  Flower2
 } from "lucide-react";
 import { motion } from "motion/react";
 import api from "../api/axios.ts";
@@ -75,31 +75,28 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <TaskModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         task={selectedTask}
       />
       {/* Overview Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         <div className="bg-bloom-pink rounded-[2rem] p-6 sm:p-8 text-white shadow-md relative overflow-hidden flex flex-col justify-center min-h-[140px] sm:min-h-[160px]">
-            <div className="relative z-10 space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+         <div className="bg-bloom-pink rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-md relative overflow-hidden flex flex-col justify-center min-h-[120px] sm:min-h-[160px]">
+            <div className="relative z-10 space-y-1 sm:space-y-2">
               <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Workspace Status</span>
-              <h4 className="text-2xl sm:text-3xl font-black">Your Focus Area</h4>
-              <p className="text-sm opacity-90">
+              <h4 className="text-xl sm:text-3xl font-black">Your Focus Area</h4>
+              <p className="text-xs sm:text-sm opacity-90">
                 You currently have <span className="font-bold underline">{pendingTasksCount} tasks</span> remaining to complete.
               </p>
             </div>
-            <div className="absolute -bottom-10 -right-10 text-[8rem] sm:text-[10rem] opacity-5 font-black leading-none pointer-events-none select-none">
-              ✓
-            </div>
          </div>
-         <div className="bg-bloom-green rounded-[2rem] p-6 sm:p-8 text-bloom-dark-green shadow-md flex flex-col justify-center min-h-[140px] sm:min-h-[160px]">
-           <div className="space-y-2">
+         <div className="bg-bloom-green rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-bloom-dark-green shadow-md flex flex-col justify-center min-h-[120px] sm:min-h-[160px]">
+           <div className="space-y-1 sm:space-y-2">
               <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Daily Habits</span>
-              <h4 className="text-2xl sm:text-3xl font-black">Daily habits</h4>
-              <p className="text-sm opacity-90">
+              <h4 className="text-xl sm:text-3xl font-black">Daily habits</h4>
+              <p className="text-xs sm:text-sm opacity-90">
                 {pendingHabitsCount > 0 
                   ? `You have ${pendingHabitsCount} habits remaining to log today.` 
                   : "All habits completed for today! Excellent job."}
@@ -108,12 +105,12 @@ export default function Dashboard() {
          </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        {/* Left Column: Habits & Badges */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <section className="bloom-card p-6 flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-gray-700 dark:text-white">Daily Habits</h3>
+      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+        {/* Left Column: Habits */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 sm:gap-6">
+          <section className="bloom-card p-4 sm:p-6 flex-1">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="font-bold text-base sm:text-lg text-gray-700 dark:text-white">Daily Habits</h3>
             </div>
             <div className="space-y-4">
               {(habitsLoading) ? (
@@ -163,8 +160,8 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column: Tasks */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-          <section className="bloom-card p-8 flex-1 border-none shadow-sm">
+        <div className="col-span-12 lg:col-span-8 flex flex-col gap-4 sm:gap-6">
+          <section className="bloom-card p-4 sm:p-6 md:p-8 flex-1 border-none shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div className="flex flex-col">
                 <h3 className="font-bold text-lg text-gray-700 dark:text-white">Currently Blooming</h3>
@@ -206,8 +203,8 @@ export default function Dashboard() {
                  </>
                ) : upcomingTasks.length === 0 ? (
                  <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-bloom-bg/30 dark:bg-slate-800/20 rounded-[2rem] border border-bloom-pink/10 dark:border-slate-700/30 p-8">
-                    <Sparkles className="w-14 h-14 text-bloom-pink animate-pulse mb-4" />
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Welcome to Bloom ✨</h3>
+                    <Flower2 className="w-14 h-14 text-bloom-pink animate-pulse mb-4" />
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Welcome to Bloom </h3>
                     <p className="text-sm text-slate-400 dark:text-slate-300 max-w-sm mx-auto mb-4 font-medium">Start organizing your workspace by adding your first task.</p>
                     <div className="flex items-center justify-center gap-4">
                       <button type="button" onClick={openAddModal} className="bloom-btn-primary px-6 py-2 text-sm font-bold rounded-xl cursor-pointer">Add First Task</button>
