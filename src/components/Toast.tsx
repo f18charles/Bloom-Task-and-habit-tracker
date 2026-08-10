@@ -41,7 +41,7 @@ function ToastItem({ toast }: { toast: ToastMessage }) {
       )}
     >
       <div className="flex-shrink-0">{icons[toast.type]}</div>
-      <p className="text-xs font-black uppercase tracking-wider flex-1">{toast.message}</p>
+      <p className="text-xs sm:text-sm font-semibold flex-1 leading-snug">{toast.message}</p>
       <button 
         type="button"
         onClick={() => removeToast(toast.id)}

@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { useToastStore } from "../store/useToastStore.ts";
 
 interface Props {
   children?: ReactNode;
@@ -21,6 +22,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
+    useToastStore.getState().addToast(error.message || "An unexpected render error occurred", "error");
   }
 
   public render() {

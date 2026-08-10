@@ -13,6 +13,7 @@ import { useAuthStore } from "./store/useAuthStore.ts";
 import { useNotifications } from "./hooks/useNotifications.ts";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import ToastContainer from "./components/Toast.tsx";
+import { useToastStore } from "./store/useToastStore.ts";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
@@ -34,6 +35,31 @@ export default function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error("Unhandled promise rejection:", event.reason);
+      const message = typeof event.reason === "string" 
+        ? event.reason 
+        : event.reason?.message || "An unexpected asynchronous error occurred";
+      useToastStore.getState().addToast(message, "error");
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.error("Uncaught window error:", event.error || event.message);
+      if (event.message) {
+        useToastStore.getState().addToast(event.message, "error");
+      }
+    };
+
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    window.addEventListener("error", handleError);
+
+    return () => {
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      window.removeEventListener("error", handleError);
+    };
+  }, []);
 
   return (
     <BrowserRouter>
