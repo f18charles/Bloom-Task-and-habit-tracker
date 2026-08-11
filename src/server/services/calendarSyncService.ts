@@ -25,8 +25,8 @@ export async function getAuthenticatedClient(userId: string) {
     expiry_date: tokenRecord.expiresAt.getTime(),
   });
 
-  // Check if token is expired
-  if (tokenRecord.expiresAt.getTime() < Date.now()) {
+  // Check if token is expired or expiring in less than a minute
+  if (tokenRecord.expiresAt.getTime() - Date.now() < 60000) {
     try {
       const { credentials } = await oauth2Client.refreshAccessToken();
       await prisma.googleToken.update({
@@ -36,8 +36,10 @@ export async function getAuthenticatedClient(userId: string) {
           expiresAt: new Date(credentials.expiry_date!),
         },
       });
+      oauth2Client.setCredentials(credentials);
     } catch (error) {
-      console.error("Error refreshing Google token:", error);
+      console.warn(`Google token refresh failed for user ${userId}, clearing invalid token:`, error);
+      await prisma.googleToken.delete({ where: { userId } }).catch(() => {});
       return null;
     }
   }
@@ -79,8 +81,11 @@ export async function syncTaskToGoogle(userId: string, task: Task) {
         data: { googleEventId: res.data.id },
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error syncing task to Google Calendar:", error);
+    if (error?.code === 401 || error?.response?.status === 401 || String(error).includes("invalid_grant")) {
+      await prisma.googleToken.delete({ where: { userId } }).catch(() => {});
+    }
   }
 }
 
@@ -133,8 +138,11 @@ export async function syncEventToGoogle(userId: string, appEvent: Event) {
         data: { googleEventId: res.data.id },
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error syncing event to Google Calendar:", error);
+    if (error?.code === 401 || error?.response?.status === 401 || String(error).includes("invalid_grant")) {
+      await prisma.googleToken.delete({ where: { userId } }).catch(() => {});
+    }
   }
 }
 
@@ -181,7 +189,10 @@ export async function syncFromGoogle(userId: string) {
       where: { userId },
       data: { lastSyncedAt: new Date() }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error syncing from Google Calendar:", error);
+    if (error?.code === 401 || error?.response?.status === 401 || String(error).includes("invalid_grant")) {
+      await prisma.googleToken.delete({ where: { userId } }).catch(() => {});
+    }
   }
 }

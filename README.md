@@ -1,8 +1,8 @@
-# Bloom Task and Habit Tracker 🌸
+# Bloom Productivity 🌸
 
 Bloom is a gamified productivity application designed to help you organize your tasks, build lasting habits, and track your personal growth in a visually stunning interface.
 
-## Features
+## ✨ Features
 
 - **Gamified Experience**: Earn XP for every task completed and habit logged. Level up and earn unique badges as you grow.
 - **Smart Task Management**: Organize your workflow with a dynamic Kanban board. Filter by priority and sort by due dates to stay on top of your game.
@@ -12,7 +12,7 @@ Bloom is a gamified productivity application designed to help you organize your 
 - **Insightful Dashboard**: Visualize your weekly growth and daily progress with real-time statistics and historical charts.
 - **Responsive Design**: A polished, mobile-friendly interface inspired by the "Bloom" aesthetic—soft pinks, vibrant greens, and clean typography.
 
-## Technology Stack
+## 🛠️ Technology Stack
 
 - **Frontend**: React (Vite), Tailwind CSS, Framer Motion (motion), Lucide React.
 - **Backend**: Node.js (Express), Prisma ORM.
@@ -20,7 +20,7 @@ Bloom is a gamified productivity application designed to help you organize your 
 - **Authentication**: JWT-based secure authentication.
 - **Integrations**: Google Calendar API.
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
