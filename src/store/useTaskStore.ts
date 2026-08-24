@@ -1,34 +1,17 @@
 import { create } from "zustand";
 import api from "../api/axios.ts";
+import { Task, SubtaskLevel2, SubtaskLevel3 } from "../types/task.ts";
 
-export interface Subtask {
-  id: string;
-  taskId: string;
-  title: string;
-  isCompleted: boolean;
-  createdAt: string;
-}
-
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: "TODO" | "IN_PROGRESS" | "DONE";
-  priority: "LOW" | "MEDIUM" | "HIGH";
-  dueDate?: string;
-  points: number;
-  googleEventId?: string;
-  createdAt: string;
-  subtasks: Subtask[];
-}
+export type { Task, SubtaskLevel2, SubtaskLevel3 };
+export type Subtask = SubtaskLevel2;
 
 interface TaskState {
   tasks: Task[];
   isLoading: boolean;
   fetchTasks: () => Promise<void>;
-  addTask: (task: Partial<Task>) => Promise<void>;
-  updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
-  deleteTask: (id: string) => Promise<void>;
+  addTask: (task: Partial<Task>) => Promise<Task | null>;
+  updateTask: (id: string, updates: Partial<Task>) => Promise<Task | null>;
+  deleteTask: (id: string) => Promise<boolean>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -46,27 +29,32 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   addTask: async (task) => {
     try {
       const { data } = await api.post("/tasks", task);
-      set({ tasks: [...get().tasks, data.data] });
+      const newTask = data.data;
+      set({ tasks: [newTask, ...get().tasks] });
+      return newTask;
     } catch {
-      // Handled via toast interceptor
+      return null;
     }
   },
   updateTask: async (id, updates) => {
     try {
       const { data } = await api.put(`/tasks/${id}`, updates);
+      const updatedTask = data.data;
       set({
-        tasks: get().tasks.map((t) => (t.id === id ? data.data : t))
+        tasks: get().tasks.map((t) => (t.id === id ? updatedTask : t))
       });
+      return updatedTask;
     } catch {
-      // Handled via toast interceptor
+      return null;
     }
   },
   deleteTask: async (id) => {
     try {
       await api.delete(`/tasks/${id}`);
       set({ tasks: get().tasks.filter((t) => t.id !== id) });
+      return true;
     } catch {
-      // Handled via toast interceptor
+      return false;
     }
   }
 }));

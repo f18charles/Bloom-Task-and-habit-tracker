@@ -1,64 +1,74 @@
 import { prisma } from "../lib/prisma.ts";
 import { addDays, addWeeks, addMonths } from "date-fns";
+import { Task } from "../../types/task.ts";
+import { randomUUID } from "crypto";
+
+function parseTasks(userTasks: any): Task[] {
+  if (!userTasks) return [];
+  if (Array.isArray(userTasks)) return userTasks as Task[];
+  if (typeof userTasks === "string") {
+    try {
+      return JSON.parse(userTasks);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 export async function processRecurringTasks() {
-  const recurringTasks = await prisma.task.findMany({
-    where: {
-      isRecurring: true,
-      status: "DONE"
-    },
-    include: {
-      subtasks: true
-    }
+  const users = await prisma.user.findMany({
+    select: { id: true, tasks: true }
   });
 
-  for (const task of recurringTasks) {
-    // Check if we already created the next one today or if it's needed
-    // Simple logic: if a recurring task is DONE, we spawn the next one and mark the current one as non-recurring (historic record)
-    // or we just spawn the next one if it doesn't exist yet with same future due date.
-    
-    let nextDueDate: Date | null = null;
-    if (task.dueDate && task.recurrenceRule) {
-      if (task.recurrenceRule === "DAILY") nextDueDate = addDays(task.dueDate, 1);
-      else if (task.recurrenceRule === "WEEKLY") nextDueDate = addWeeks(task.dueDate, 1);
-      else if (task.recurrenceRule === "MONTHLY") nextDueDate = addMonths(task.dueDate, 1);
+  for (const user of users) {
+    const tasks = parseTasks(user.tasks);
+    let hasChanges = false;
+    const newTasksToAppend: Task[] = [];
+
+    for (const task of tasks) {
+      if (task.isRecurring && task.status === "DONE" && task.dueDate && task.recurrenceRule) {
+        let nextDueDate: Date | null = null;
+        const taskDueDate = new Date(task.dueDate);
+        if (task.recurrenceRule === "DAILY") nextDueDate = addDays(taskDueDate, 1);
+        else if (task.recurrenceRule === "WEEKLY") nextDueDate = addWeeks(taskDueDate, 1);
+        else if (task.recurrenceRule === "MONTHLY") nextDueDate = addMonths(taskDueDate, 1);
+
+        if (nextDueDate) {
+          const nextDueDateIso = nextDueDate.toISOString();
+          const alreadyCreated = tasks.some(
+            t => t.title === task.title && t.dueDate === nextDueDateIso && t.isRecurring
+          );
+
+          if (!alreadyCreated) {
+            newTasksToAppend.push({
+              id: randomUUID(),
+              title: task.title,
+              description: task.description,
+              status: "TODO",
+              priority: task.priority,
+              dueDate: nextDueDateIso,
+              points: task.points || 10,
+              isRecurring: true,
+              recurrenceRule: task.recurrenceRule,
+              createdAt: new Date().toISOString(),
+              completedAt: null,
+              subtasks: []
+            });
+
+            task.isRecurring = false;
+            hasChanges = true;
+          }
+        }
+      }
     }
 
-    if (nextDueDate) {
-      // Check if next task already created
-      const alreadyCreated = await prisma.task.findFirst({
-        where: {
-          userId: task.userId,
-          title: task.title,
-          dueDate: nextDueDate,
-          isRecurring: true
-        }
+    if (hasChanges || newTasksToAppend.length > 0) {
+      const updatedTasks = [...newTasksToAppend, ...tasks];
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { tasks: updatedTasks as any }
       });
-
-      if (!alreadyCreated) {
-        await prisma.task.create({
-          data: {
-            userId: task.userId,
-            title: task.title,
-            description: task.description,
-            status: "TODO",
-            priority: task.priority,
-            dueDate: nextDueDate,
-            points: task.points,
-            isRecurring: true,
-            recurrenceRule: task.recurrenceRule,
-            subtasks: {
-              create: task.subtasks ? [] : undefined // Simplified: we don't clone subtasks for now to avoid complexity
-            }
-          }
-        });
-
-        // Mark the old one as no longer recurring so we don't process it again
-        await prisma.task.update({
-          where: { id: task.id },
-          data: { isRecurring: false }
-        });
-      }
     }
   }
 }

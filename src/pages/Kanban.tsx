@@ -44,8 +44,21 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
     opacity: isDragging ? 0.3 : 1
   };
 
-  const completedSubtasks = task.subtasks?.filter(s => s.isCompleted).length || 0;
-  const totalSubtasks = task.subtasks?.length || 0;
+  let completedSubtasks = 0;
+  let totalSubtasks = 0;
+  if (task.subtasks && Array.isArray(task.subtasks)) {
+    task.subtasks.forEach(s2 => {
+      if (s2.subtasks && s2.subtasks.length > 0) {
+        s2.subtasks.forEach(s3 => {
+          totalSubtasks++;
+          if (s3.isCompleted) completedSubtasks++;
+        });
+      } else {
+        totalSubtasks++;
+        if (s2.isCompleted) completedSubtasks++;
+      }
+    });
+  }
   const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
   return (

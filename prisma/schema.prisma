@@ -13,42 +13,13 @@ model User {
   passwordHash String
   displayName  String
   points       Int      @default(0)
+  tasks        Json     @default("[]")
   createdAt    DateTime @default(now())
 
-  tasks        Task[]
   habits       Habit[]
   googleToken  GoogleToken?
   events       Event[]
   passwordResetTokens PasswordResetToken[]
-}
-
-model Task {
-  id             String    @id @default(cuid())
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title          String
-  description    String?
-  status         String    @default("TODO") // TODO, IN_PROGRESS, DONE
-  priority       String    @default("MEDIUM") // LOW, MEDIUM, HIGH
-  dueDate        DateTime?
-  reminderAt     DateTime?
-  isRecurring    Boolean   @default(false)
-  recurrenceRule String?
-  points         Int       @default(10)
-  createdAt      DateTime  @default(now())
-  completedAt    DateTime?
-  googleEventId  String?
-
-  subtasks       Subtask[]
-}
-
-model Subtask {
-  id          String   @id @default(cuid())
-  taskId      String
-  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  title       String
-  isCompleted Boolean  @default(false)
-  createdAt   DateTime @default(now())
 }
 
 model GoogleToken {

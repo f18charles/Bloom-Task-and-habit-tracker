@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 import { prisma } from "../lib/prisma.ts";
-import { Task, Event } from "@prisma/client";
+import { Event } from "@prisma/client";
+import { Task } from "../../types/task.ts";
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "PASTE_YOUR_CLIENT_ID_HERE";
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "PASTE_YOUR_CLIENT_SECRET_HERE";
@@ -47,20 +48,21 @@ export async function getAuthenticatedClient(userId: string) {
   return oauth2Client;
 }
 
-export async function syncTaskToGoogle(userId: string, task: Task) {
+export async function syncTaskToGoogle(userId: string, task: Task): Promise<string | undefined> {
   const auth = await getAuthenticatedClient(userId);
   if (!auth || !task.dueDate) return;
 
   const calendar = google.calendar({ version: "v3", auth });
+  const dueDateObj = new Date(task.dueDate);
 
   const event = {
     summary: task.title,
     description: task.description || "",
     start: {
-      dateTime: task.dueDate.toISOString(),
+      dateTime: dueDateObj.toISOString(),
     },
     end: {
-      dateTime: new Date(task.dueDate.getTime() + 60 * 60 * 1000).toISOString(),
+      dateTime: new Date(dueDateObj.getTime() + 60 * 60 * 1000).toISOString(),
     },
   };
 
@@ -71,21 +73,20 @@ export async function syncTaskToGoogle(userId: string, task: Task) {
         eventId: task.googleEventId,
         requestBody: event,
       });
+      return task.googleEventId;
     } else {
       const res = await calendar.events.insert({
         calendarId: "primary",
         requestBody: event,
       });
-      await prisma.task.update({
-        where: { id: task.id },
-        data: { googleEventId: res.data.id },
-      });
+      return res.data.id || undefined;
     }
   } catch (error: any) {
     console.error("Error syncing task to Google Calendar:", error);
     if (error?.code === 401 || error?.response?.status === 401 || String(error).includes("invalid_grant")) {
       await prisma.googleToken.delete({ where: { userId } }).catch(() => {});
     }
+    return undefined;
   }
 }
 

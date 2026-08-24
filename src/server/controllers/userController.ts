@@ -3,6 +3,20 @@ import { prisma } from "../lib/prisma.ts";
 import { AuthRequest } from "../middleware/auth.ts";
 import { subDays, startOfDay } from "date-fns";
 import { Parser } from "json2csv";
+import { Task } from "../../types/task.ts";
+
+function parseTasks(userTasks: any): Task[] {
+  if (!userTasks) return [];
+  if (Array.isArray(userTasks)) return userTasks as Task[];
+  if (typeof userTasks === "string") {
+    try {
+      return JSON.parse(userTasks);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 export const getStats = async (req: AuthRequest, res: Response) => {
   try {
@@ -11,21 +25,18 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       where: { id: userId },
       include: {
         _count: {
-          select: { tasks: true, habits: true }
+          select: { habits: true }
         }
       }
     });
 
-    const completedTasksCount = await prisma.task.count({
-      where: { userId, status: "DONE" }
-    });
+    const tasks = parseTasks(user?.tasks);
+    const completedTasksCount = tasks.filter(t => t.status === "DONE").length;
 
-    // Recent activity (last 5)
-    const recentTasks = await prisma.task.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 5
-    });
+    // Recent activity (last 5 tasks sorted by createdAt desc)
+    const recentTasks = [...tasks]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
 
     // Points history for the last 7 days
     const pointsHistory = [];
@@ -37,15 +48,14 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       const end = new Date(start);
       end.setHours(23, 59, 59, 999);
 
-      const taskStats = await prisma.task.aggregate({
-        where: {
-          userId,
-          status: "DONE",
-          completedAt: { gte: start, lte: end }
-        },
-        _sum: { points: true },
-        _count: { id: true }
+      // Filter tasks done in this day range
+      const tasksDoneInDay = tasks.filter(t => {
+        if (t.status !== "DONE" || !t.completedAt) return false;
+        const compDate = new Date(t.completedAt);
+        return compDate >= start && compDate <= end;
       });
+      const taskPointsSum = tasksDoneInDay.reduce((sum, t) => sum + (t.points || 10), 0);
+      const tasksCount = tasksDoneInDay.length;
 
       const habitPoints = await prisma.habitLog.findMany({
         where: {
@@ -56,8 +66,7 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       });
 
       const totalHabitPoints = habitPoints.reduce((sum, log) => sum + (log.habit.points || 0), 0);
-      const totalPoints = (taskStats._sum.points || 0) + totalHabitPoints;
-      const tasksCount = taskStats._count.id || 0;
+      const totalPoints = taskPointsSum + totalHabitPoints;
       const habitsCount = habitPoints.length;
 
       const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
@@ -97,24 +106,38 @@ export const getStats = async (req: AuthRequest, res: Response) => {
 export const exportUserData = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.id;
-    const tasks = await prisma.task.findMany({ where: { userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { tasks: true }
+    });
+    const tasks = parseTasks(user?.tasks);
     const habits = await prisma.habit.findMany({ where: { userId } });
     
-    const combinedData = tasks.map(t => ({
-      type: "TASK",
-      id: t.id,
-      title: t.title,
-      status: t.status,
-      priority: t.priority,
-      createdAt: t.createdAt
-    })).concat(habits.map(h => ({
-      type: "HABIT",
-      id: h.id,
-      title: h.title,
-      status: "N/A",
-      priority: "N/A",
-      createdAt: h.createdAt
-    })));
+    const combinedData: Array<{
+      type: string;
+      id: string;
+      title: string;
+      status: string;
+      priority: string;
+      createdAt: string | Date;
+    }> = [
+      ...tasks.map(t => ({
+        type: "TASK",
+        id: t.id,
+        title: t.title,
+        status: t.status,
+        priority: t.priority,
+        createdAt: t.createdAt
+      })),
+      ...habits.map(h => ({
+        type: "HABIT",
+        id: h.id,
+        title: h.title,
+        status: "N/A",
+        priority: "N/A",
+        createdAt: h.createdAt
+      }))
+    ];
 
     if (combinedData.length === 0) {
       return res.status(404).json({ error: "No data to export" });

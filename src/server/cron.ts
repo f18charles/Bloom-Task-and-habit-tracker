@@ -36,7 +36,6 @@ export function setupCronJobs() {
     console.log("Sending daily digests...");
     const users = await prisma.user.findMany({
       include: {
-        tasks: { where: { status: { not: "DONE" } } },
         habits: true
       }
     });
@@ -44,7 +43,9 @@ export function setupCronJobs() {
     for (const user of users) {
       try {
         const habitsToComplete = user.habits; // Simplification
-        await sendDailyDigest(user, user.tasks, habitsToComplete);
+        const allTasks = Array.isArray(user.tasks) ? (user.tasks as any[]) : [];
+        const pendingTasks = allTasks.filter(t => t && t.status !== "DONE");
+        await sendDailyDigest(user, pendingTasks, habitsToComplete);
       } catch (error) {
         console.error(`Failed to send digest for user ${user.id}:`, error);
       }

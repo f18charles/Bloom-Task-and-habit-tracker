@@ -7,21 +7,20 @@ import {
   Calendar as CalendarIcon, 
   BarChart3, 
   Trello, 
-  Sparkles, 
   Flame, 
   ArrowRight, 
   ChevronRight, 
   ShieldCheck, 
-  Zap, 
   Clock, 
   Plus, 
   Check, 
   RefreshCw,
-  HelpCircle,
   ChevronDown,
   Layers,
-  Target,
-  ListTodo
+  ListTodo,
+  CornerDownRight,
+  Trash2,
+  CalendarCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -30,11 +29,33 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar
+  ResponsiveContainer 
 } from "recharts";
 import { useAuthStore } from "../store/useAuthStore.ts";
+
+interface SandboxSubtaskLevel3 {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+}
+
+interface SandboxSubtaskLevel2 {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+  subtasks?: SandboxSubtaskLevel3[];
+}
+
+interface SandboxTask {
+  id: number;
+  title: string;
+  description?: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  status: "TODO" | "IN_PROGRESS" | "DONE";
+  dueDate: string;
+  isRecurring?: boolean;
+  subtasks: SandboxSubtaskLevel2[];
+}
 
 export default function Welcome() {
   const { user } = useAuthStore();
@@ -43,14 +64,76 @@ export default function Welcome() {
   // Interactive Sandbox State
   const [sandboxTab, setSandboxTab] = useState<"tasks" | "habits" | "calendar" | "progress">("tasks");
   
-  // Sample interactive tasks in sandbox
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Review quarterly personal growth goals", priority: "HIGH", status: "TODO", dueDate: "Today, 5:00 PM" },
-    { id: 2, title: "Morning 15-minute mindfulness & reflection", priority: "MEDIUM", status: "DONE", dueDate: "Completed" },
-    { id: 3, title: "Sync Google Calendar schedule for the week", priority: "URGENT", status: "TODO", dueDate: "Tomorrow, 10:00 AM" },
-    { id: 4, title: "Draft outline for creative project", priority: "LOW", status: "IN_PROGRESS", dueDate: "Friday" },
+  // Interactive tasks with 3-Level Nesting (Root -> Subtasks -> Micro-steps)
+  const [tasks, setTasks] = useState<SandboxTask[]>([
+    {
+      id: 1,
+      title: "Launch Product Feature Sprint",
+      description: "Complete key milestone deliverables with team",
+      priority: "URGENT",
+      status: "IN_PROGRESS",
+      dueDate: "Today, 5:00 PM",
+      isRecurring: true,
+      subtasks: [
+        {
+          id: "st-1",
+          title: "Design user flow & interactive wireframes",
+          isCompleted: true,
+          subtasks: [
+            { id: "st-1-1", title: "Review mobile breakpoints", isCompleted: true },
+            { id: "st-1-2", title: "Approve dark mode palette", isCompleted: true }
+          ]
+        },
+        {
+          id: "st-2",
+          title: "Implement 3-level subtask architecture",
+          isCompleted: false,
+          subtasks: [
+            { id: "st-2-1", title: "Define TypeScript nested schema", isCompleted: true },
+            { id: "st-2-2", title: "Wire reactive Zustand state updates", isCompleted: false },
+            { id: "st-2-3", title: "Add interactive checklist modal UI", isCompleted: false }
+          ]
+        },
+        {
+          id: "st-3",
+          title: "Deploy build & verify end-to-end sync",
+          isCompleted: false,
+          subtasks: []
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Daily 15-Minute Focus & Planning Ritual",
+      description: "Review top 3 daily priorities and calendar schedule",
+      priority: "HIGH",
+      status: "DONE",
+      dueDate: "Completed",
+      isRecurring: true,
+      subtasks: [
+        { id: "st-4", title: "Clear inbox action items", isCompleted: true, subtasks: [] },
+        { id: "st-5", title: "Time-block afternoon deep work", isCompleted: true, subtasks: [] }
+      ]
+    },
+    {
+      id: 3,
+      title: "Sync Google Calendar schedule for the week",
+      description: "Connect bi-directional events and deadlines",
+      priority: "MEDIUM",
+      status: "TODO",
+      dueDate: "Tomorrow, 10:00 AM",
+      isRecurring: false,
+      subtasks: [
+        { id: "st-6", title: "Authorize OAuth access in settings", isCompleted: false, subtasks: [] }
+      ]
+    }
   ]);
+
+  const [expandedTasks, setExpandedTasks] = useState<Record<number, boolean>>({ 1: true });
+  const [expandedSubtasks, setExpandedSubtasks] = useState<Record<string, boolean>>({ "st-2": true });
   const [newTaskInput, setNewTaskInput] = useState("");
+  const [newSubtaskInputs, setNewSubtaskInputs] = useState<Record<number, string>>({});
+  const [newLevel3Inputs, setNewLevel3Inputs] = useState<Record<string, string>>({});
 
   // Sample interactive habits in sandbox
   const [habits, setHabits] = useState([
@@ -66,31 +149,140 @@ export default function Welcome() {
   // FAQ open states
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Interactive task toggle
+  // Toggle Root Task completion
   const toggleTask = (id: number) => {
     setTasks(prev => prev.map(t => {
       if (t.id === id) {
         const nextStatus = t.status === "DONE" ? "TODO" : "DONE";
-        return { ...t, status: nextStatus };
+        const markSubtasksDone = nextStatus === "DONE";
+        const updatedSubtasks = t.subtasks.map(s2 => ({
+          ...s2,
+          isCompleted: markSubtasksDone,
+          subtasks: (s2.subtasks || []).map(s3 => ({ ...s3, isCompleted: markSubtasksDone }))
+        }));
+        return { ...t, status: nextStatus, subtasks: updatedSubtasks };
       }
       return t;
     }));
   };
 
+  // Toggle Level 2 Subtask
+  const toggleSubtaskLevel2 = (taskId: number, subtaskId: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updatedSubtasks = t.subtasks.map(s2 => {
+          if (s2.id === subtaskId) {
+            const nextCompleted = !s2.isCompleted;
+            return {
+              ...s2,
+              isCompleted: nextCompleted,
+              subtasks: (s2.subtasks || []).map(s3 => ({ ...s3, isCompleted: nextCompleted }))
+            };
+          }
+          return s2;
+        });
+        const allDone = updatedSubtasks.every(s2 => s2.isCompleted);
+        return {
+          ...t,
+          status: allDone ? "DONE" : t.status === "DONE" ? "IN_PROGRESS" : t.status,
+          subtasks: updatedSubtasks
+        };
+      }
+      return t;
+    }));
+  };
+
+  // Toggle Level 3 Micro-step
+  const toggleSubtaskLevel3 = (taskId: number, subtaskId: string, level3Id: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updatedSubtasks = t.subtasks.map(s2 => {
+          if (s2.id === subtaskId) {
+            const updatedL3 = (s2.subtasks || []).map(s3 => {
+              if (s3.id === level3Id) {
+                return { ...s3, isCompleted: !s3.isCompleted };
+              }
+              return s3;
+            });
+            const l2Done = updatedL3.every(s3 => s3.isCompleted);
+            return { ...s2, isCompleted: l2Done, subtasks: updatedL3 };
+          }
+          return s2;
+        });
+        return { ...t, subtasks: updatedSubtasks };
+      }
+      return t;
+    }));
+  };
+
+  // Add Root Task
   const handleAddSandboxTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskInput.trim()) return;
+    const newId = Date.now();
     setTasks(prev => [
-      ...prev,
       {
-        id: Date.now(),
+        id: newId,
         title: newTaskInput.trim(),
-        priority: "MEDIUM",
+        priority: "HIGH",
         status: "TODO",
-        dueDate: "Today"
-      }
+        dueDate: "Today",
+        isRecurring: false,
+        subtasks: [
+          { id: `st-${newId}-1`, title: "First preparation step", isCompleted: false, subtasks: [] }
+        ]
+      },
+      ...prev
     ]);
+    setExpandedTasks(prev => ({ ...prev, [newId]: true }));
     setNewTaskInput("");
+  };
+
+  // Add Level 2 Subtask to a specific task
+  const handleAddLevel2Subtask = (taskId: number) => {
+    const title = (newSubtaskInputs[taskId] || "").trim();
+    if (!title) return;
+    const newSubId = `st-${Date.now()}`;
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return {
+          ...t,
+          subtasks: [
+            ...t.subtasks,
+            { id: newSubId, title, isCompleted: false, subtasks: [] }
+          ]
+        };
+      }
+      return t;
+    }));
+    setNewSubtaskInputs(prev => ({ ...prev, [taskId]: "" }));
+    setExpandedSubtasks(prev => ({ ...prev, [newSubId]: true }));
+  };
+
+  // Add Level 3 Micro-step
+  const handleAddLevel3Subtask = (taskId: number, subtaskId: string) => {
+    const title = (newLevel3Inputs[subtaskId] || "").trim();
+    if (!title) return;
+    const newL3Id = `l3-${Date.now()}`;
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return {
+          ...t,
+          subtasks: t.subtasks.map(s2 => {
+            if (s2.id === subtaskId) {
+              return {
+                ...s2,
+                isCompleted: false,
+                subtasks: [...(s2.subtasks || []), { id: newL3Id, title, isCompleted: false }]
+              };
+            }
+            return s2;
+          })
+        };
+      }
+      return t;
+    }));
+    setNewLevel3Inputs(prev => ({ ...prev, [subtaskId]: "" }));
   };
 
   // Interactive habit toggle
@@ -128,20 +320,24 @@ export default function Welcome() {
       a: "Bloom is an all-in-one personal growth and productivity workspace. It is crafted for students, professionals, creators, and mindful individuals who want to organize daily tasks, sustain recurring positive habits, and maintain full schedule clarity without feeling overwhelmed."
     },
     {
-      q: "Do I need a paid subscription or credit card?",
-      a: "No! Bloom is free to use. You can register an account in seconds without entering any payment information."
+      q: "How does the 3-Level Task hierarchy work?",
+      a: "Bloom lets you structure complex objectives into 3 intuitive levels: Level 1 (Main Root Tasks), Level 2 (Subtasks for major phases), and Level 3 (Micro-steps & checklists). This lets you break large goals down into manageable actions while tracking progress automatically."
+    },
+    {
+      q: "Can I set tasks to repeat automatically?",
+      a: "Yes! Bloom supports automated recurring tasks with Daily, Weekly, and Monthly frequencies. When you finish a recurring task, the background engine automatically spawns the next occurrence on schedule."
     },
     {
       q: "How does Google Calendar synchronization work?",
-      a: "Bloom supports direct, bi-directional Google Calendar integration. You can connect your Google account in Settings, and Bloom will automatically pull your calendar events and push scheduled tasks directly into your calendar."
+      a: "Bloom features direct, bi-directional Google Calendar integration. You can connect your Google account in Settings, and Bloom will automatically pull your calendar events and push scheduled tasks directly into your calendar."
     },
     {
-      q: "Can I manage tasks with different views?",
-      a: "Yes! Bloom features both a high-efficiency List & Priority Dashboard as well as an interactive Kanban Board where you can drag and organize tasks between To Do, In Progress, and Done stages."
+      q: "Can I organize tasks with Kanban boards?",
+      a: "Yes! Bloom includes both a high-efficiency prioritized List view and an interactive Drag-and-Drop Kanban Board with To Do, In Progress, and Completed stages."
     },
     {
       q: "How do habit streaks work?",
-      a: "Whenever you complete a habit on a scheduled day, your streak increases. Bloom tracks your active streaks, celebrates consistency milestones, and generates visual progress graphs so you can reflect on your growth over time."
+      a: "Whenever you complete a habit on a scheduled day, your streak increments. Bloom tracks your active streaks, celebrates consistency milestones, and generates visual analytics so you can reflect on your growth over time."
     }
   ];
 
@@ -202,7 +398,6 @@ export default function Welcome() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-200/60 dark:border-slate-800">
-        {/* Subtle Decorative Background Glows */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-bloom-pink-light via-bloom-green-light to-purple-50 dark:from-slate-800/40 dark:to-purple-900/20 blur-3xl opacity-60 pointer-events-none -z-10 rounded-full" />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6 sm:space-y-8">
@@ -212,7 +407,8 @@ export default function Welcome() {
             transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200"
           >
-            <span>Your All-In-One Personal Growth Space</span>
+            <Layers className="w-3.5 h-3.5 text-bloom-pink" />
+            <span>3-Level Tasks &bull; Habits &bull; Google Calendar Sync</span>
           </motion.div>
 
           <motion.h1
@@ -221,7 +417,7 @@ export default function Welcome() {
             transition={{ duration: 0.4, delay: 0.1 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.15]"
           >
-            Organize your days, nurture daily habits, and watch your focus <span className="text-bloom-pink dark:text-indigo-400 underline decoration-bloom-green decoration-wavy decoration-2">bloom</span>.
+            Structure complex goals, build habits, and watch your productivity <span className="text-bloom-pink dark:text-indigo-400 underline decoration-bloom-green decoration-wavy decoration-2">bloom</span>.
           </motion.h1>
 
           <motion.p
@@ -230,7 +426,7 @@ export default function Welcome() {
             transition={{ duration: 0.4, delay: 0.2 }}
             className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed"
           >
-            A calm, distraction-free productivity app bringing smart tasks, streak-powered habits, Google Calendar sync, and progress analytics into one unified flow.
+            A calm, distraction-free workspace featuring 3-level hierarchical task breakdowns, recurring schedules, streak-powered habits, and bi-directional Google Calendar synchronization.
           </motion.p>
 
           {/* Action CTAs */}
@@ -244,7 +440,7 @@ export default function Welcome() {
               to="/auth?mode=register"
               className="w-full sm:w-auto px-8 py-4 bg-bloom-pink hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg shadow-slate-900/10 dark:shadow-indigo-950/40 flex items-center justify-center gap-2 text-base transition-all active:scale-95 cursor-pointer"
             >
-              <span>Start Growing Free</span>
+              <span>Start Free Today</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
@@ -252,7 +448,7 @@ export default function Welcome() {
               href="#sandbox"
               className="w-full sm:w-auto px-7 py-4 bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-bold rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-sm flex items-center justify-center gap-2 text-base transition-all cursor-pointer"
             >
-              <span>Test Interactive Demo</span>
+              <span>Test Interactive Task Demo</span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </a>
           </motion.div>
@@ -265,20 +461,20 @@ export default function Welcome() {
             className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-semibold text-slate-500 dark:text-slate-400 max-w-3xl mx-auto"
           >
             <div className="flex items-center justify-center gap-1.5 p-2 bg-white/60 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800">
-              <CheckCircle2 className="w-4 h-4 text-bloom-green shrink-0" />
-              <span>No Credit Card Needed</span>
+              <Layers className="w-4 h-4 text-bloom-pink shrink-0" />
+              <span>3-Level Hierarchical Tasks</span>
             </div>
             <div className="flex items-center justify-center gap-1.5 p-2 bg-white/60 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800">
               <CalendarIcon className="w-4 h-4 text-bloom-green shrink-0" />
               <span>Google Calendar Sync</span>
             </div>
             <div className="flex items-center justify-center gap-1.5 p-2 bg-white/60 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800">
-              <Flame className="w-4 h-4 text-bloom-green shrink-0" />
+              <Flame className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Habit Streaks</span>
             </div>
             <div className="flex items-center justify-center gap-1.5 p-2 bg-white/60 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800">
               <ShieldCheck className="w-4 h-4 text-bloom-green shrink-0" />
-              <span>Private & Secure</span>
+              <span>Private & Cloud Synced</span>
             </div>
           </motion.div>
         </div>
@@ -291,10 +487,10 @@ export default function Welcome() {
             Hands-On Interactive Sandbox
           </span>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-            Try Bloom Right Now Before Signing Up
+            Experience 3-Level Tasks & Habits in Real Time
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Click tasks to complete them, add new items, track sample habits, and see how the workspace responds in real time.
+            Test our hierarchical task breakdown, expand subtasks into micro-steps, complete goals, and test habit streaks directly in the sandbox below.
           </p>
         </div>
 
@@ -308,7 +504,7 @@ export default function Welcome() {
               <div className="w-3 h-3 rounded-full bg-amber-400" />
               <div className="w-3 h-3 rounded-full bg-emerald-400" />
               <span className="ml-2 text-xs font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
-                Bloom Live Preview Environment
+                Bloom Live Interactive Demo
               </span>
             </div>
 
@@ -322,8 +518,8 @@ export default function Welcome() {
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
                 }`}
               >
-                <ListTodo className="w-3.5 h-3.5" />
-                <span>Tasks ({completedCount}/{tasks.length})</span>
+                <ListTodo className="w-3.5 h-3.5 text-bloom-pink" />
+                <span>3-Level Tasks ({completedCount}/{tasks.length})</span>
               </button>
               <button
                 onClick={() => setSandboxTab("habits")}
@@ -362,20 +558,20 @@ export default function Welcome() {
           </div>
 
           {/* Sandbox Body Content */}
-          <div className="p-5 sm:p-8 bg-slate-50/50 dark:bg-slate-900/40 min-h-[380px]">
+          <div className="p-5 sm:p-8 bg-slate-50/50 dark:bg-slate-900/40 min-h-[420px]">
             {sandboxTab === "tasks" && (
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {/* Header within sandbox */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-700">
                   <div>
                     <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                      <span>Smart Focus Tasks</span>
-                      <span className="text-xs font-semibold text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full">
-                        Interactive Demo
+                      <span>Hierarchical Task Engine</span>
+                      <span className="text-[10px] font-black uppercase text-bloom-pink bg-bloom-pink-light dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                        3-Level Nesting
                       </span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Click any task's checkmark to mark it done or pending.
+                      Expand tasks to reveal Subtasks (L2) and granular checklist Micro-steps (L3).
                     </p>
                   </div>
 
@@ -393,7 +589,7 @@ export default function Welcome() {
                 <form onSubmit={handleAddSandboxTask} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Type a sample task (e.g., 'Finish project proposal') and press Enter..."
+                    placeholder="Create a root task (e.g., 'Organize Product Launch')..."
                     value={newTaskInput}
                     onChange={(e) => setNewTaskInput(e.target.value)}
                     className="flex-1 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-bloom-pink transition-all"
@@ -407,60 +603,237 @@ export default function Welcome() {
                   </button>
                 </form>
 
-                {/* Interactive Task Cards */}
-                <div className="space-y-2.5">
-                  {tasks.map((task) => (
-                    <motion.div
-                      key={task.id}
-                      layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      onClick={() => toggleTask(task.id)}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                        task.status === "DONE"
-                          ? "bg-slate-100/80 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 opacity-70"
-                          : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm hover:border-bloom-pink/40"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <button
-                          type="button"
-                          className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                            task.status === "DONE"
-                              ? "bg-bloom-green text-white"
-                              : "border-2 border-slate-300 dark:border-slate-600 hover:border-bloom-green text-transparent"
-                          }`}
-                        >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        </button>
-                        <div className="min-w-0">
-                          <p className={`text-sm font-semibold truncate ${
-                            task.status === "DONE"
-                              ? "line-through text-slate-400 dark:text-slate-500"
-                              : "text-slate-800 dark:text-slate-100"
-                          }`}>
-                            {task.title}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {task.dueDate}
+                {/* Interactive Task Cards with 3-Level Subtasks */}
+                <div className="space-y-4">
+                  {tasks.map((task) => {
+                    const isTaskExpanded = !!expandedTasks[task.id];
+                    let totalSteps = 0;
+                    let completedSteps = 0;
+                    task.subtasks.forEach(s2 => {
+                      if (s2.subtasks && s2.subtasks.length > 0) {
+                        s2.subtasks.forEach(s3 => {
+                          totalSteps++;
+                          if (s3.isCompleted) completedSteps++;
+                        });
+                      } else {
+                        totalSteps++;
+                        if (s2.isCompleted) completedSteps++;
+                      }
+                    });
+
+                    return (
+                      <motion.div
+                        key={task.id}
+                        layout
+                        className={`rounded-2xl border transition-all overflow-hidden ${
+                          task.status === "DONE"
+                            ? "bg-slate-100/80 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 opacity-80"
+                            : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm"
+                        }`}
+                      >
+                        {/* Level 1: Root Task Header */}
+                        <div className="p-4 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <button
+                              type="button"
+                              onClick={() => toggleTask(task.id)}
+                              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+                                task.status === "DONE"
+                                  ? "bg-bloom-green text-white"
+                                  : "border-2 border-slate-300 dark:border-slate-600 hover:border-bloom-green text-transparent"
+                              }`}
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </button>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className={`text-sm font-bold truncate ${
+                                  task.status === "DONE"
+                                    ? "line-through text-slate-400 dark:text-slate-500"
+                                    : "text-slate-800 dark:text-slate-100"
+                                }`}>
+                                  {task.title}
+                                </p>
+                                {task.isRecurring && (
+                                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-300">
+                                    Recurring
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-400">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {task.dueDate}
+                                </span>
+                                {totalSteps > 0 && (
+                                  <span className="font-semibold text-slate-500 dark:text-slate-400">
+                                    {completedSteps}/{totalSteps} sub-steps
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              task.priority === "URGENT" 
+                                ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                                : task.priority === "HIGH"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                                : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                            }`}>
+                              {task.priority}
                             </span>
+
+                            <button
+                              type="button"
+                              onClick={() => setExpandedTasks(prev => ({ ...prev, [task.id]: !prev[task.id] }))}
+                              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold"
+                            >
+                              <span>{task.subtasks.length} Subtasks</span>
+                              {isTaskExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
                         </div>
-                      </div>
 
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                        task.priority === "URGENT" 
-                          ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
-                          : task.priority === "HIGH"
-                          ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                      }`}>
-                        {task.priority}
-                      </span>
-                    </motion.div>
-                  ))}
+                        {/* Level 2 & 3 Subtasks Container */}
+                        {isTaskExpanded && (
+                          <div className="px-4 pb-4 pt-1 bg-slate-50/70 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700/50 space-y-3">
+                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                              Subtasks & Checklists (Levels 2 & 3)
+                            </div>
+
+                            {/* Level 2 Subtasks list */}
+                            <div className="space-y-2.5">
+                              {task.subtasks.map((st2) => {
+                                const isL2Expanded = !!expandedSubtasks[st2.id];
+                                const l3Count = st2.subtasks?.length || 0;
+                                const l3Completed = st2.subtasks?.filter(s3 => s3.isCompleted).length || 0;
+
+                                return (
+                                  <div 
+                                    key={st2.id}
+                                    className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-2"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleSubtaskLevel2(task.id, st2.id)}
+                                          className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                                            st2.isCompleted
+                                              ? "bg-bloom-pink border-bloom-pink text-white"
+                                              : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                                          }`}
+                                        >
+                                          {st2.isCompleted && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                                        </button>
+                                        <span className={`text-xs font-semibold truncate ${
+                                          st2.isCompleted ? "line-through text-slate-400" : "text-slate-700 dark:text-slate-200"
+                                        }`}>
+                                          {st2.title}
+                                        </span>
+                                      </div>
+
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => setExpandedSubtasks(prev => ({ ...prev, [st2.id]: !prev[st2.id] }))}
+                                          className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 flex items-center gap-1 cursor-pointer"
+                                        >
+                                          <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">L3</span>
+                                          <span>{l3Completed}/{l3Count}</span>
+                                          {isL2Expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Level 3 Micro-steps */}
+                                    {isL2Expanded && (
+                                      <div className="pl-5 pt-1.5 space-y-1.5 border-t border-slate-100 dark:border-slate-700/40">
+                                        {st2.subtasks && st2.subtasks.map((st3) => (
+                                          <div key={st3.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/60">
+                                            <CornerDownRight className="w-3 h-3 text-slate-300 dark:text-slate-600 shrink-0" />
+                                            <button
+                                              type="button"
+                                              onClick={() => toggleSubtaskLevel3(task.id, st2.id, st3.id)}
+                                              className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                                                st3.isCompleted
+                                                  ? "bg-bloom-pink border-bloom-pink text-white"
+                                                  : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                                              }`}
+                                            >
+                                              {st3.isCompleted && <Check className="w-2 h-2 stroke-[3]" />}
+                                            </button>
+                                            <span className={`text-[11px] truncate ${
+                                              st3.isCompleted ? "line-through text-slate-400" : "text-slate-600 dark:text-slate-300"
+                                            }`}>
+                                              {st3.title}
+                                            </span>
+                                          </div>
+                                        ))}
+
+                                        {/* Add Level 3 item input */}
+                                        <div className="flex gap-1.5 pt-1 items-center">
+                                          <CornerDownRight className="w-3 h-3 text-bloom-pink/60 shrink-0" />
+                                          <input
+                                            type="text"
+                                            placeholder="Add micro-step (Level 3)..."
+                                            value={newLevel3Inputs[st2.id] || ""}
+                                            onChange={(e) => setNewLevel3Inputs({ ...newLevel3Inputs, [st2.id]: e.target.value })}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                handleAddLevel3Subtask(task.id, st2.id);
+                                              }
+                                            }}
+                                            className="flex-1 px-2.5 py-1 text-[11px] bg-slate-50 dark:bg-slate-900 rounded-lg outline-none focus:ring-1 focus:ring-bloom-pink text-slate-700 dark:text-slate-200"
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddLevel3Subtask(task.id, st2.id)}
+                                            className="px-2 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-bloom-pink hover:text-white rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                                          >
+                                            Add
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+
+                              {/* Add Level 2 Subtask form */}
+                              <div className="flex gap-2 pt-1">
+                                <input
+                                  type="text"
+                                  placeholder="Add subtask (Level 2)..."
+                                  value={newSubtaskInputs[task.id] || ""}
+                                  onChange={(e) => setNewSubtaskInputs({ ...newSubtaskInputs, [task.id]: e.target.value })}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      handleAddLevel2Subtask(task.id);
+                                    }
+                                  }}
+                                  className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-bloom-pink text-slate-700 dark:text-slate-200"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddLevel2Subtask(task.id)}
+                                  className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-bloom-pink hover:text-white rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer flex items-center gap-1"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  <span>Subtask</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -472,7 +845,7 @@ export default function Welcome() {
                     <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                       <span>Habit Momentum & Daily Streaks</span>
                       <span className="text-xs font-semibold text-amber-600 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-2 py-0.5 rounded-full">
-                        Gamified
+                        Streaks
                       </span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -631,37 +1004,37 @@ export default function Welcome() {
               Everything You Need To Flourish Daily
             </h2>
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-              Thoughtfully architected tools to help you clarify priorities, build compounding habits, and avoid burnout.
+              Thoughtfully architected tools to help you structure objectives, build compounding habits, and execute without cognitive overload.
             </p>
           </div>
 
           {/* 4 Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {/* Pillar 1 */}
+            {/* Pillar 1: 3-Level Tasks & Kanban */}
             <div className="bloom-card p-6 sm:p-8 space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-bloom-pink-light dark:bg-slate-700 flex items-center justify-center text-bloom-pink dark:text-white">
-                <Trello className="w-6 h-6" />
+                <Layers className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">
-                Kanban & Prioritized Task Board
+                3-Level Task Hierarchy & Kanban Boards
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                Organize projects seamlessly across To Do, In Progress, and Completed columns. Set priorities, due date reminders, and filter by urgency so you always know what matters right now.
+                Break complex ambitions into structured milestones. Organize main goals (Level 1) into actionable subtasks (Level 2) and checklists of micro-steps (Level 3), with drag-and-drop Kanban and prioritized list views.
               </p>
               <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400 pt-2">
                 <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Drag and drop organization
+                  <Check className="w-3.5 h-3.5 text-bloom-green" /> 3-Level deep nesting (Root &rarr; Subtasks &rarr; Micro-steps)
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Priority labeling (Urgent, High, Medium, Low)
+                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Recurring task rules (Daily, Weekly, Monthly cycles)
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Recurrence schedules for recurring chores
+                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Priority matrix (Urgent, High, Medium, Low) & Kanban stages
                 </li>
               </ul>
             </div>
 
-            {/* Pillar 2 */}
+            {/* Pillar 2: Habits */}
             <div className="bloom-card p-6 sm:p-8 space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-500">
                 <Flame className="w-6 h-6" />
@@ -674,10 +1047,10 @@ export default function Welcome() {
               </p>
               <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400 pt-2">
                 <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Customizable daily/weekly frequencies
+                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Customizable daily/weekly schedules
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Streak counter with recovery safeguards
+                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Streak counter with momentum milestones
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-bloom-green" /> Daily completion rate meters
@@ -685,13 +1058,13 @@ export default function Welcome() {
               </ul>
             </div>
 
-            {/* Pillar 3 */}
+            {/* Pillar 3: Calendar */}
             <div className="bloom-card p-6 sm:p-8 space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-500">
                 <CalendarIcon className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">
-                Google Calendar Integration
+                Google Calendar Bi-Directional Sync
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Connect your real-world Google Calendar with a single click. Keep time-sensitive tasks in sync with your meetings and appointments on one cohesive monthly and daily timeline.
@@ -704,12 +1077,12 @@ export default function Welcome() {
                   <Check className="w-3.5 h-3.5 text-bloom-green" /> Scheduled task time-blocking
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Conflict-free scheduling
+                  <Check className="w-3.5 h-3.5 text-bloom-green" /> Conflict-free scheduling & reminders
                 </li>
               </ul>
             </div>
 
-            {/* Pillar 4 */}
+            {/* Pillar 4: Analytics */}
             <div className="bloom-card p-6 sm:p-8 space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-bloom-green">
                 <BarChart3 className="w-6 h-6" />
@@ -753,10 +1126,10 @@ export default function Welcome() {
               01
             </div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-              Set Your Daily Intentions
+              Capture & Structure Goals
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Capture tasks quickly, assign priorities, and define recurring habits that support your personal and professional growth.
+              Create tasks and break them down into 3 levels: Root goals, Subtasks, and checklist Micro-steps with priorities and recurring rules.
             </p>
           </div>
 
@@ -765,10 +1138,10 @@ export default function Welcome() {
               02
             </div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-              Sync & Focus
+              Sync & Execute
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Let Google Calendar align your schedule while you execute tasks seamlessly using the prioritized list and Kanban board.
+              Let Google Calendar align your deadlines while you organize and complete items on the dashboard or Kanban board.
             </p>
           </div>
 
@@ -777,7 +1150,7 @@ export default function Welcome() {
               03
             </div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-              Track Momentum & Bloom
+              Build Habits & Bloom
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               Check off daily habits to maintain active streaks, and inspect your weekly analytics to celebrate consistency.
