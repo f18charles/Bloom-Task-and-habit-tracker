@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import api from "../api/axios.ts";
+import { useToastStore } from "./useToastStore.ts";
 
 export interface Event {
   id: string;
@@ -41,6 +42,7 @@ export const useEventStore = create<EventState>((set, get) => ({
     try {
       const { data } = await api.post("/events", event);
       set({ events: [...get().events, data.data], isLoading: false });
+      useToastStore.getState().addToast(`Event "${data.data.title}" scheduled!`, "success");
     } catch (err: any) {
       set({ error: err.response?.data?.error || "Failed to create event", isLoading: false });
     }
@@ -53,6 +55,7 @@ export const useEventStore = create<EventState>((set, get) => ({
         events: get().events.map((e) => (e.id === id ? data.data : e)),
         isLoading: false
       });
+      useToastStore.getState().addToast(`Event "${data.data.title}" updated!`, "success");
     } catch (err: any) {
       set({ error: err.response?.data?.error || "Failed to update event", isLoading: false });
     }
@@ -65,6 +68,7 @@ export const useEventStore = create<EventState>((set, get) => ({
         events: get().events.filter((e) => e.id !== id),
         isLoading: false 
       });
+      useToastStore.getState().addToast("Event deleted successfully", "info");
     } catch (err: any) {
       set({ error: err.response?.data?.error || "Failed to delete event", isLoading: false });
     }

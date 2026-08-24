@@ -8,7 +8,8 @@ import {
   Calendar as CalendarIcon,
   Trophy,
   Zap,
-  Flower2
+  Flower2,
+  Sparkles
 } from "lucide-react";
 import { motion } from "motion/react";
 import api from "../api/axios.ts";
@@ -20,7 +21,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary.tsx";
 import { Skeleton, TaskSkeleton, CardSkeleton } from "../components/Skeleton.tsx";
 
 export default function Dashboard() {
-  const { tasks, fetchTasks, isLoading: tasksLoading } = useTaskStore();
+  const { tasks, fetchTasks, isLoading: tasksLoading, recentlyUpdatedTaskId } = useTaskStore();
   const { user } = useAuthStore();
   const { habits, fetchHabits, logHabit, isLoading: habitsLoading } = useHabitStore();
   const [stats, setStats] = useState<any>(null);
@@ -214,16 +215,27 @@ export default function Dashboard() {
                    <div 
                      key={task.id} 
                      onClick={() => openEditModal(task)}
-                     className="p-5 border border-bloom-pink/5 dark:border-slate-700/50 rounded-2xl bg-white dark:bg-slate-800/40 shadow-sm space-y-3 hover:border-bloom-pink/30 dark:hover:border-slate-600 hover:shadow-md dark:hover:bg-slate-800 transition-all cursor-pointer group"
+                     className={cn(
+                       "p-5 border border-bloom-pink/5 dark:border-slate-700/50 rounded-2xl bg-white dark:bg-slate-800/40 shadow-sm space-y-3 hover:border-bloom-pink/30 dark:hover:border-slate-600 hover:shadow-md dark:hover:bg-slate-800 transition-all cursor-pointer group relative",
+                       recentlyUpdatedTaskId === task.id && "ring-2 ring-bloom-pink shadow-lg shadow-bloom-pink/20 scale-[1.01]"
+                     )}
                    >
                      <div className="flex justify-between items-start">
-                       <span className={cn(
-                         "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm",
-                         task.priority === "HIGH" ? "bg-red-50 text-red-500" :
-                         task.priority === "MEDIUM" ? "bg-orange-50 text-orange-500" : "bg-blue-50 text-blue-500"
-                       )}>
-                         {task.priority}
-                       </span>
+                       <div className="flex items-center gap-1.5">
+                         <span className={cn(
+                           "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm",
+                           task.priority === "HIGH" ? "bg-red-50 text-red-500" :
+                           task.priority === "MEDIUM" ? "bg-orange-50 text-orange-500" : "bg-blue-50 text-blue-500"
+                         )}>
+                           {task.priority}
+                         </span>
+                         {recentlyUpdatedTaskId === task.id && (
+                           <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-bloom-pink text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                             <Sparkles className="w-2 h-2" />
+                             Active
+                           </span>
+                         )}
+                       </div>
                        <div className="flex items-center gap-2">
                          {task.googleEventId && <CalendarIcon className="w-3 h-3 text-blue-400" />}
                          <span className="text-[10px] text-slate-200 font-mono group-hover:text-bloom-pink transition-colors">#TSK-{task.id.slice(-3)}</span>

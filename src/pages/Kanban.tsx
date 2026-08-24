@@ -20,7 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useTaskStore, Task } from "../store/useTaskStore.ts";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2, Calendar, LayoutList, Clock } from "lucide-react";
+import { GripVertical, Plus, Trash2, Calendar, LayoutList, Clock, Sparkles } from "lucide-react";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { motion } from "motion/react";
 import { cn } from "../lib/utils.ts";
@@ -28,7 +28,8 @@ import TaskModal from "../components/TaskModal.tsx";
 import { TaskSkeleton } from "../components/Skeleton.tsx";
 
 function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
-  const { deleteTask, updateTask } = useTaskStore();
+  const { deleteTask, updateTask, recentlyUpdatedTaskId } = useTaskStore();
+  const isRecentlyUpdated = recentlyUpdatedTaskId === task.id;
   const {
     attributes,
     listeners,
@@ -65,7 +66,10 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bloom-card p-5 group bg-white dark:bg-slate-800/40 border border-bloom-pink/5 dark:border-slate-700/40 hover:border-bloom-pink/30 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
+      className={cn(
+        "bloom-card p-5 group bg-white dark:bg-slate-800/40 border border-bloom-pink/5 dark:border-slate-700/40 hover:border-bloom-pink/30 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden relative",
+        isRecentlyUpdated && "ring-2 ring-bloom-pink shadow-lg shadow-bloom-pink/20 scale-[1.01]"
+      )}
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
@@ -73,9 +77,15 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
           <GripVertical className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start mb-2 gap-2">
             <h4 className="font-bold text-slate-800 dark:text-white truncate text-sm leading-none">{task.title}</h4>
             <div className="flex items-center gap-1.5 min-w-max">
+              {isRecentlyUpdated && (
+                <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-bloom-pink text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  Active
+                </span>
+              )}
               {task.googleEventId && <Calendar className="w-3 h-3 text-blue-400" />}
               <span className="text-[10px] text-slate-300 dark:text-slate-500 font-mono tracking-tighter">#{task.id.slice(-4).toUpperCase()}</span>
             </div>

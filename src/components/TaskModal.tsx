@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Calendar, Check, Trash2, Plus, ChevronDown, ChevronRight, CornerDownRight, Layers } from "lucide-react";
+import { X, Calendar, Check, Trash2, Plus, ChevronDown, ChevronRight, CornerDownRight, Layers, Loader2, CheckCircle2 } from "lucide-react";
 import { useTaskStore, Task, SubtaskLevel2, SubtaskLevel3 } from "../store/useTaskStore.ts";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils.ts";
@@ -13,6 +13,7 @@ interface TaskModalProps {
 
 export default function TaskModal({ isOpen, onClose, task, defaultStatus }: TaskModalProps) {
   const { addTask, updateTask } = useTaskStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -176,20 +177,29 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = {
-      ...formData,
-      subtasks,
-      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
-      isRecurring: formData.isRecurring,
-      recurrenceRule: formData.isRecurring ? formData.recurrenceRule : undefined
-    };
+    if (isSubmitting || !formData.title.trim()) return;
 
-    if (task) {
-      await updateTask(task.id, data as any);
-    } else {
-      await addTask(data as any);
+    setIsSubmitting(true);
+    try {
+      const data = {
+        ...formData,
+        subtasks,
+        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
+        isRecurring: formData.isRecurring,
+        recurrenceRule: formData.isRecurring ? formData.recurrenceRule : undefined
+      };
+
+      if (task) {
+        await updateTask(task.id, data as any);
+      } else {
+        await addTask(data as any);
+      }
+      onClose();
+    } catch {
+      // Errors handled by axios interceptor
+    } finally {
+      setIsSubmitting(false);
     }
-    onClose();
   };
 
   // Compute total hierarchy progress
@@ -538,10 +548,17 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
               <div className="pt-2">
                 <button 
                   type="submit"
-                  disabled={formData.title.trim().length === 0}
-                  className="w-full bg-bloom-pink text-white font-black py-3.5 rounded-2xl shadow-lg shadow-bloom-pink/20 hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  disabled={formData.title.trim().length === 0 || isSubmitting}
+                  className="w-full bg-bloom-pink text-white font-black py-3.5 rounded-2xl shadow-lg shadow-bloom-pink/20 hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  {task ? "Save Changes" : "Create Task"}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{task ? "Saving Changes..." : "Creating Task..."}</span>
+                    </>
+                  ) : (
+                    <span>{task ? "Save Changes" : "Create Task"}</span>
+                  )}
                 </button>
               </div>
             </form>

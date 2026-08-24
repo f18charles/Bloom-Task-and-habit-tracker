@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import api from "../api/axios.ts";
+import { useToastStore } from "./useToastStore.ts";
 
 export interface Habit {
   id: string;
@@ -34,6 +35,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data } = await api.post("/habits", habit);
       set({ habits: [...get().habits, data.data] });
+      useToastStore.getState().addToast(`Habit "${data.data.title}" created successfully!`, "success");
     } catch {
       // Handled via toast interceptor
     }
@@ -41,11 +43,13 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   logHabit: async (id) => {
     try {
       const { data } = await api.post(`/habits/${id}/log`);
+      const currentHabit = get().habits.find(h => h.id === id);
       set({
         habits: get().habits.map((h) => 
           h.id === id ? { ...h, logs: [...(h.logs || []), data.data] } : h
         )
       });
+      useToastStore.getState().addToast(`Logged "${currentHabit?.title || "Habit"}" for today! 🎉`, "success");
     } catch {
       // Handled via toast interceptor
     }
@@ -54,6 +58,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       await api.delete(`/habits/${id}`);
       set({ habits: get().habits.filter((h) => h.id !== id) });
+      useToastStore.getState().addToast("Habit deleted successfully", "info");
     } catch {
       // Handled via toast interceptor
     }
