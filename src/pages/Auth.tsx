@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore.ts";
-import { Flower2, AlertCircle, Check } from "lucide-react";
+import { Flower2, AlertCircle, Check, ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
 import { loginSchema, registerSchema } from "../lib/validation.ts";
 import { z } from "zod";
 import api from "../api/axios.ts";
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode");
+  const [isLogin, setIsLogin] = useState(mode !== "register" && mode !== "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -20,6 +23,14 @@ export default function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { login, register } = useAuthStore();
+
+  useEffect(() => {
+    if (mode === "register" || mode === "signup") {
+      setIsLogin(false);
+    } else if (mode === "login" || mode === "signin") {
+      setIsLogin(true);
+    }
+  }, [mode]);
 
   const formatError = (err: any, fallback: string): string => {
     const errorObj = err.response?.data?.error;
@@ -216,7 +227,7 @@ export default function AuthPage() {
           </form>
         )}
 
-        <div className="mt-8 text-center text-slate-500">
+        <div className="mt-8 text-center space-y-3">
           <button 
             type="button"
             onClick={() => {
@@ -225,10 +236,20 @@ export default function AuthPage() {
               setError("");
               setSuccessMsg("");
             }}
-            className="text-bloom-pink font-bold hover:underline cursor-pointer"
+            className="text-bloom-pink font-bold hover:underline cursor-pointer block w-full text-sm"
           >
             {isLogin ? "New here? Create an account" : "Already have an account? Sign in"}
           </button>
+
+          <div className="pt-2 border-t border-slate-100">
+            <Link
+              to="/welcome"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 font-semibold transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Welcome & Feature Tour</span>
+            </Link>
+          </div>
         </div>
       </motion.div>
     </div>

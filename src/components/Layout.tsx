@@ -94,7 +94,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 space-y-3 border-t border-bloom-pink/10 dark:border-slate-700">
-          {/* APK Install Widget in Sidebar */}
+          {/* Android App Widget in Sidebar */}
           <div className="bg-gradient-to-br from-bloom-pink/10 via-bloom-purple/10 to-bloom-pink/5 dark:from-bloom-pink/20 dark:to-slate-800 p-3.5 rounded-2xl border border-bloom-pink/20 dark:border-slate-700 relative overflow-hidden group">
             <div className="flex items-center gap-2.5 mb-2">
               <div className="w-8 h-8 rounded-xl bg-bloom-pink text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -103,17 +103,17 @@ export default function Layout({ children }: { children: ReactNode }) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] font-black uppercase text-bloom-pink dark:text-bloom-pink tracking-wider">Android App</span>
-                  <span className="text-[9px] font-bold bg-bloom-green text-bloom-dark-green px-1.5 py-0.2 rounded-full">APK</span>
+                  <span className="text-[9px] font-bold bg-bloom-green text-bloom-dark-green px-1.5 rounded-full">Mobile</span>
                 </div>
-                <p className="text-xs font-bold text-slate-800 dark:text-white truncate">Install Bloom APK</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-white truncate">Android Edition</p>
               </div>
             </div>
             <button 
               onClick={() => setIsApkModalOpen(true)}
               className="w-full py-2 px-3 bg-bloom-pink hover:bg-bloom-pink/90 text-white font-bold text-xs rounded-xl shadow-md shadow-bloom-pink/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />
-              Download APK
+              <Smartphone className="w-3.5 h-3.5" />
+              Android App
             </button>
           </div>
 
@@ -158,8 +158,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               onClick={() => setIsApkModalOpen(true)}
               className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-bloom-pink/10 dark:bg-bloom-pink/20 text-bloom-pink font-bold text-xs rounded-xl border border-bloom-pink/20 transition-all cursor-pointer"
             >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>Get APK</span>
+              <Download className="w-3.5 h-3.5" />
+              <span>Get App</span>
             </button>
           </div>
         </header>

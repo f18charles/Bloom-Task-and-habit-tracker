@@ -9,6 +9,7 @@ import Calendar from "./pages/Calendar.tsx";
 import Settings from "./pages/Settings.tsx";
 import AuthPage from "./pages/Auth.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import Welcome from "./pages/Welcome.tsx";
 import { useAuthStore } from "./store/useAuthStore.ts";
 import { useNotifications } from "./hooks/useNotifications.ts";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
@@ -19,7 +20,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
   
   if (isLoading) return null;
-  if (!user) return <Navigate to="/auth" />;
+  if (!user) return <Navigate to="/welcome" />;
   
   return (
     <ErrorBoundary>
@@ -29,7 +30,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { checkAuth, user } = useAuthStore();
+  const { checkAuth, user, isLoading } = useAuthStore();
   useNotifications(); // Request permissions
 
   useEffect(() => {
@@ -74,6 +75,7 @@ export default function App() {
     <BrowserRouter>
       <ToastContainer />
       <Routes>
+        <Route path="/welcome" element={<Welcome />} />
         <Route 
           path="/auth" 
           element={user ? <Navigate to="/" /> : <AuthPage />} 
@@ -83,7 +85,16 @@ export default function App() {
           element={<ResetPassword />} 
         />
         
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route 
+          path="/" 
+          element={
+            isLoading ? null : user ? (
+              <ProtectedRoute><Dashboard /></ProtectedRoute>
+            ) : (
+              <Welcome />
+            )
+          } 
+        />
         <Route path="/kanban" element={<ProtectedRoute><Kanban /></ProtectedRoute>} />
         <Route path="/habits" element={<ProtectedRoute><Habits /></ProtectedRoute>} />
         <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
