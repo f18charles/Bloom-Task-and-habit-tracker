@@ -40,16 +40,8 @@ model Habit {
   frequency    String    @default("DAILY") // DAILY, WEEKLY
   reminderTime String?
   points       Int       @default(5)
+  logs         Json      @default("[]")
   createdAt    DateTime  @default(now())
-
-  logs HabitLog[]
-}
-
-model HabitLog {
-  id          String   @id @default(cuid())
-  habitId     String
-  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
-  completedAt DateTime @default(now())
 }
 
 model Event {

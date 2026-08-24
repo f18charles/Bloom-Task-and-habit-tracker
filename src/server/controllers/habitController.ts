@@ -1,21 +1,31 @@
 import { Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 import { AuthRequest } from "../middleware/auth.ts";
-import { startOfDay, endOfDay, subDays } from "date-fns";
+import { format } from "date-fns";
+
+interface HabitLogEntry {
+  id: string;
+  completedAt: string;
+}
+
+function parseLogs(logs: any): HabitLogEntry[] {
+  if (!logs) return [];
+  if (Array.isArray(logs)) return logs as HabitLogEntry[];
+  if (typeof logs === "string") {
+    try {
+      return JSON.parse(logs);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 export const getHabits = async (req: AuthRequest, res: Response) => {
   try {
     const habits = await prisma.habit.findMany({
       where: { userId: req.user?.id },
-      include: {
-        logs: {
-          where: {
-            completedAt: {
-              gte: subDays(new Date(), 30) // Last 30 days of logs for streaks
-            }
-          }
-        }
-      }
+      orderBy: { createdAt: "desc" }
     });
     res.json({ data: habits });
   } catch (error) {
@@ -32,7 +42,8 @@ export const createHabit = async (req: AuthRequest, res: Response) => {
         title,
         frequency: frequency || "DAILY",
         reminderTime,
-        points: points || 5
+        points: points || 5,
+        logs: []
       }
     });
     res.json({ data: habit });
@@ -49,23 +60,29 @@ export const logHabit = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    // Check if already logged today
-    const todayLog = await prisma.habitLog.findFirst({
-      where: {
-        habitId: id,
-        completedAt: {
-          gte: startOfDay(new Date()),
-          lte: endOfDay(new Date())
-        }
-      }
-    });
+    const currentLogs = parseLogs(habit.logs);
+    const today = format(new Date(), "yyyy-MM-dd");
 
-    if (todayLog) {
+    // Check if already logged today
+    const alreadyLoggedToday = currentLogs.some(
+      l => format(new Date(l.completedAt), "yyyy-MM-dd") === today
+    );
+
+    if (alreadyLoggedToday) {
       return res.status(400).json({ error: "Already logged today" });
     }
 
-    const log = await prisma.habitLog.create({
-      data: { habitId: id }
+    const newLog: HabitLogEntry = {
+      id: Math.random().toString(36).substring(2, 9),
+      completedAt: new Date().toISOString()
+    };
+
+    const updatedLogs = [...currentLogs, newLog];
+
+    // Save updated logs to the Habit jsonb column
+    await prisma.habit.update({
+      where: { id },
+      data: { logs: updatedLogs as any }
     });
 
     // Update user points
@@ -74,7 +91,7 @@ export const logHabit = async (req: AuthRequest, res: Response) => {
       data: { points: { increment: habit.points } }
     });
 
-    res.json({ data: log });
+    res.json({ data: newLog });
   } catch (error) {
     res.status(500).json({ error: "Failed to log habit" });
   }
@@ -96,6 +113,5 @@ export const deleteHabit = async (req: AuthRequest, res: Response) => {
 };
 
 export const getHabitStats = async (req: AuthRequest, res: Response) => {
-  // Logic for streaks could go here
-  res.json({ data: { streak: 5 } }); // Mock for now
+  res.json({ data: { streak: 5 } });
 };

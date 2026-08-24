@@ -33,6 +33,9 @@ export const getStats = async (req: AuthRequest, res: Response) => {
     const tasks = parseTasks(user?.tasks);
     const completedTasksCount = tasks.filter(t => t.status === "DONE").length;
 
+    // Fetch user habits once for stats calculation
+    const userHabits = await prisma.habit.findMany({ where: { userId } });
+
     // Recent activity (last 5 tasks sorted by createdAt desc)
     const recentTasks = [...tasks]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -57,18 +60,25 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       const taskPointsSum = tasksDoneInDay.reduce((sum, t) => sum + (t.points || 10), 0);
       const tasksCount = tasksDoneInDay.length;
 
-      const habitPoints = await prisma.habitLog.findMany({
-        where: {
-          habit: { userId },
-          completedAt: { gte: start, lte: end }
-        },
-        include: { habit: true }
+      // Calculate habit points and logs for this day range
+      let totalHabitPoints = 0;
+      let habitsCount = 0;
+
+      userHabits.forEach(h => {
+        const logs = Array.isArray(h.logs)
+          ? (h.logs as Array<{ completedAt: string }>)
+          : [];
+        logs.forEach(l => {
+          if (!l.completedAt) return;
+          const compDate = new Date(l.completedAt);
+          if (compDate >= start && compDate <= end) {
+            totalHabitPoints += (h.points || 5);
+            habitsCount++;
+          }
+        });
       });
 
-      const totalHabitPoints = habitPoints.reduce((sum, log) => sum + (log.habit.points || 0), 0);
       const totalPoints = taskPointsSum + totalHabitPoints;
-      const habitsCount = habitPoints.length;
-
       const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
 
       pointsHistory.push({
