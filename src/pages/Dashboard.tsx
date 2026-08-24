@@ -231,8 +231,7 @@ export default function Dashboard() {
                          </span>
                          {recentlyUpdatedTaskId === task.id && (
                            <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-bloom-pink text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                             <Sparkles className="w-2 h-2" />
-                             Active
+                             Updated
                            </span>
                          )}
                        </div>

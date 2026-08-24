@@ -82,8 +82,7 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
             <div className="flex items-center gap-1.5 min-w-max">
               {isRecentlyUpdated && (
                 <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest bg-bloom-pink text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  Active
+                  Updated
                 </span>
               )}
               {task.googleEventId && <Calendar className="w-3 h-3 text-blue-400" />}
