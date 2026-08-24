@@ -155,8 +155,6 @@ export default function Dashboard() {
               })}
             </div>
           </section>
-
-          {/* Achievement Badges section removed */}
         </div>
 
         {/* Right Column: Tasks */}

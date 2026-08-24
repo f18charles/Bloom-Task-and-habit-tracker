@@ -98,7 +98,6 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
         where: { id: req.user!.id },
         data: { points: { increment: task.points } }
       });
-      // Check for user badges could go here
     } else if (wasDone && !isDone) {
       // Revert points if changed back from DONE
       await prisma.user.update({

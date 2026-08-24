@@ -17,7 +17,6 @@ model User {
 
   tasks        Task[]
   habits       Habit[]
-  badges       Badge[]
   googleToken  GoogleToken?
   events       Event[]
   passwordResetTokens PasswordResetToken[]
@@ -80,14 +79,6 @@ model HabitLog {
   habitId     String
   habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
   completedAt DateTime @default(now())
-}
-
-model Badge {
-  id       String   @id @default(cuid())
-  userId   String
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type     String // e.g., "7_DAY_STREAK", "50_TASKS"
-  earnedAt DateTime @default(now())
 }
 
 model Event {

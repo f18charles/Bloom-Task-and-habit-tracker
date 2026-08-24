@@ -11,7 +11,7 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       where: { id: userId },
       include: {
         _count: {
-          select: { tasks: true, habits: true, badges: true }
+          select: { tasks: true, habits: true }
         }
       }
     });
@@ -83,7 +83,6 @@ export const getStats = async (req: AuthRequest, res: Response) => {
         points: user?.points || 0,
         tasksCompleted: completedTasksCount,
         habitsActive: user?._count.habits || 0,
-        badgesEarned: user?._count.badges || 0,
         recentActivity: recentTasks,
         pointsHistory,
         taskHistory,
