@@ -137,7 +137,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 p-3 sm:p-6 md:p-8 pb-20 lg:pb-8">
+      <main className="flex-1 lg:ml-64 p-3 sm:p-6 md:p-8 pb-24 sm:pb-28 lg:pb-8 min-w-0 max-w-full">
         {/* Top Navbar */}
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-4 sm:mb-8 gap-3 sm:gap-4">
           <div className="flex items-center justify-between w-full md:w-auto">
@@ -156,7 +156,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             {/* Mobile APK Quick Button */}
             <button 
               onClick={() => setIsApkModalOpen(true)}
-              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-bloom-pink/10 dark:bg-bloom-pink/20 text-bloom-pink font-bold text-xs rounded-xl border border-bloom-pink/20 transition-all cursor-pointer"
+              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-bloom-pink/10 dark:bg-bloom-pink/20 text-bloom-pink font-bold text-xs rounded-xl border border-bloom-pink/20 transition-all cursor-pointer hover:bg-bloom-pink/20 active:scale-95"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Get App</span>
@@ -169,9 +169,13 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg border-t border-bloom-pink/10 dark:border-slate-700 px-1 py-1.5 sm:px-2 sm:py-2 flex justify-around items-center z-50">
-        {navItems.slice(0, 5).map((item) => {
+      {/* Mobile Bottom Navigation Drawer (Fixed to bottom of screen) */}
+      <nav 
+        id="mobile-bottom-drawer"
+        aria-label="Mobile Navigation"
+        className="fixed bottom-0 inset-x-0 lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-bloom-pink/20 dark:border-slate-800 shadow-[0_-6px_25px_rgba(0,0,0,0.08)] dark:shadow-[0_-6px_30px_rgba(0,0,0,0.5)] px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom,0.5rem))] flex justify-between items-center z-50"
+      >
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
           return (
@@ -179,25 +183,22 @@ export default function Layout({ children }: { children: ReactNode }) {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all",
-                isActive ? "text-bloom-pink bg-bloom-pink/10 dark:bg-bloom-pink/20 font-semibold" : "text-slate-400 dark:text-slate-300"
+                "flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition-all min-h-[46px] min-w-0 text-center relative",
+                isActive 
+                  ? "text-bloom-pink font-extrabold bg-bloom-pink/10 dark:bg-bloom-pink/20" 
+                  : "text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               )}
             >
-              <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-[9px] sm:text-[10px] font-bold">{item.name}</span>
+              <Icon className={cn("w-5 h-5 shrink-0 transition-transform", isActive && "scale-110 text-bloom-pink")} />
+              <span className={cn("text-[9.5px] sm:text-[10px] tracking-tight leading-none truncate max-w-full block", isActive ? "font-bold" : "font-medium")}>
+                {item.name}
+              </span>
+              {isActive && (
+                <span className="absolute -top-1 w-5 h-1 bg-bloom-pink rounded-full" />
+              )}
             </Link>
           );
         })}
-        <Link
-          to="/settings"
-          className={cn(
-            "flex flex-col items-center gap-0.5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all",
-            location.pathname === "/settings" ? "text-bloom-pink bg-bloom-pink/10 dark:bg-bloom-pink/20 font-semibold" : "text-slate-400 dark:text-slate-300"
-          )}
-        >
-          <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="text-[9px] sm:text-[10px] font-bold">Settings</span>
-        </Link>
       </nav>
     </div>
   );

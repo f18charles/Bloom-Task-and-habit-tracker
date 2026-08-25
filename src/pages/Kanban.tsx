@@ -190,9 +190,9 @@ function SortableTask({ task, onClick }: { task: Task, onClick: () => void }) {
 }
 
 const COLUMNS = [
-  { id: "TODO", title: "To Do", color: "bg-slate-300" },
-  { id: "IN_PROGRESS", title: "In Progress", color: "bg-bloom-pink" },
-  { id: "DONE", title: "Done", color: "bg-bloom-green" }
+  { id: "TODO", title: "To Do", shortTitle: "To Do", color: "bg-slate-400 dark:bg-slate-500", badgeColor: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200" },
+  { id: "IN_PROGRESS", title: "In Progress", shortTitle: "Progress", color: "bg-bloom-pink", badgeColor: "bg-bloom-pink/10 dark:bg-bloom-pink/20 text-bloom-pink" },
+  { id: "DONE", title: "Done", shortTitle: "Done", color: "bg-bloom-green", badgeColor: "bg-bloom-green/20 dark:bg-bloom-green/30 text-bloom-dark-green dark:text-[#86efac]" }
 ];
 
 export default function Kanban() {
@@ -202,17 +202,18 @@ export default function Kanban() {
   const [defaultStatus, setDefaultStatus] = useState("TODO");
   const [filterPriority, setFilterPriority] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState<string>("NEWEST");
+  const [activeMobileColumn, setActiveMobileColumn] = useState<string>("ALL");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 8,
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250,
-        tolerance: 5,
+        delay: 200,
+        tolerance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -237,7 +238,7 @@ export default function Kanban() {
       return 0;
     });
 
-  const openAddModal = (status: string) => {
+  const openAddModal = (status: string = "TODO") => {
     setSelectedTask(null);
     setDefaultStatus(status);
     setIsModalOpen(true);
@@ -274,67 +275,131 @@ export default function Kanban() {
     }
   };
 
+  const visibleColumns = activeMobileColumn === "ALL" 
+    ? COLUMNS 
+    : COLUMNS.filter(c => c.id === activeMobileColumn);
+
   return (
-    <div className="min-h-[calc(100vh-160px)] flex flex-col gap-4 sm:gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6 min-w-0">
       <TaskModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         task={selectedTask}
         defaultStatus={defaultStatus}
       />
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 sm:px-4 gap-3 sm:gap-6">
-         <div>
-           <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white tracking-tight">Board</h2>
-           <p className="text-slate-400 dark:text-slate-300 text-xs sm:text-sm">Visualize your progress.</p>
-         </div>
-         <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-2xl p-1 shadow-sm border border-bloom-pink/10 dark:border-slate-700">
-              <select 
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value)}
-                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500 dark:text-slate-300"
+
+      {/* Header & Main Actions */}
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 dark:text-white tracking-tight leading-tight">
+              Task Board
+            </h2>
+            <p className="text-slate-400 dark:text-slate-300 text-xs sm:text-sm">
+              {tasks.length} {tasks.length === 1 ? "task" : "tasks"} total
+            </p>
+          </div>
+
+          <button 
+            type="button"
+            onClick={() => openAddModal(activeMobileColumn !== "ALL" ? activeMobileColumn : "TODO")}
+            className="flex items-center gap-1.5 px-4 py-2.5 sm:px-5 sm:py-3 bg-bloom-pink hover:bg-bloom-pink/90 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-bloom-pink/20 active:scale-95 transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Task</span>
+          </button>
+        </div>
+
+        {/* Mobile Column Segmented Switcher */}
+        <div className="md:hidden flex items-center p-1 bg-slate-100/80 dark:bg-slate-800/80 rounded-2xl gap-1 border border-bloom-pink/10 dark:border-slate-700/50">
+          <button
+            type="button"
+            onClick={() => setActiveMobileColumn("ALL")}
+            className={cn(
+              "flex-1 py-2 px-1.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 min-w-0",
+              activeMobileColumn === "ALL"
+                ? "bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            )}
+          >
+            <span className="truncate">All</span>
+            <span className="text-[10px] opacity-70">({tasks.length})</span>
+          </button>
+
+          {COLUMNS.map((col) => {
+            const count = tasks.filter(t => t.status === col.id).length;
+            const isActive = activeMobileColumn === col.id;
+            return (
+              <button
+                key={col.id}
+                type="button"
+                onClick={() => setActiveMobileColumn(col.id)}
+                className={cn(
+                  "flex-1 py-2 px-1.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 min-w-0",
+                  isActive
+                    ? "bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                )}
               >
-                <option value="ALL">All Priority</option>
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
-              </select>
-              <div className="w-px h-4 bg-slate-100 dark:bg-slate-700" />
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="text-[10px] font-black uppercase tracking-widest border-none px-3 py-2 outline-none focus:ring-0 bg-transparent text-slate-500 dark:text-slate-300"
+                <div className={cn("w-2 h-2 rounded-full shrink-0", col.color)} />
+                <span className="truncate">{col.shortTitle}</span>
+                <span className="text-[10px] opacity-70">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filter and Sort Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-2xl p-1 shadow-sm border border-bloom-pink/10 dark:border-slate-700 max-w-full overflow-x-auto">
+            <select 
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+              className="text-[10px] sm:text-xs font-black uppercase tracking-wider border-none px-2.5 sm:px-3 py-1.5 outline-none focus:ring-0 bg-transparent text-slate-600 dark:text-slate-300 cursor-pointer"
+            >
+              <option value="ALL">All Priority</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 shrink-0" />
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="text-[10px] sm:text-xs font-black uppercase tracking-wider border-none px-2.5 sm:px-3 py-1.5 outline-none focus:ring-0 bg-transparent text-slate-600 dark:text-slate-300 cursor-pointer"
+            >
+              <option value="NEWEST">Newest</option>
+              <option value="OLDEST">Oldest</option>
+              <option value="DUE_DATE">Due Date</option>
+            </select>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5">
+            {COLUMNS.map(col => (
+              <button 
+                key={col.id}
+                type="button"
+                onClick={() => openAddModal(col.id)}
+                className="bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-300 px-3 py-2 rounded-xl shadow-sm border border-bloom-pink/10 dark:border-slate-700 hover:text-bloom-pink hover:border-bloom-pink/30 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
               >
-                <option value="NEWEST">Newest</option>
-                <option value="OLDEST">Oldest</option>
-                <option value="DUE_DATE">Due Date</option>
-              </select>
-            </div>
-            
-            <div className="flex gap-2">
-               {COLUMNS.map(col => (
-                 <button 
-                   key={col.id}
-                   onClick={() => openAddModal(col.id)}
-                   className="bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-300 px-4 py-3 rounded-2xl shadow-sm border border-bloom-pink/5 dark:border-slate-700 hover:text-bloom-pink hover:border-bloom-pink/20 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
-                 >
-                   + {col.title.split(' ')[0]}
-                 </button>
-               ))}
-            </div>
-         </div>
+                + {col.title}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
+
       {isLoading ? (
-        <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
-          {COLUMNS.map((col) => (
-            <div key={col.id} className="flex-1 flex flex-col gap-4 min-w-[300px] md:min-w-[320px]">
-              <div className="flex items-center justify-between px-4">
-                <div className="flex items-center gap-3">
+        <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory">
+          {visibleColumns.map((col) => (
+            <div key={col.id} className="flex-1 flex flex-col gap-3 min-w-[85vw] sm:min-w-[300px] md:min-w-[320px] snap-center">
+              <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-2.5">
                   <div className={cn("w-3 h-3 rounded-full shadow-sm", col.color)} />
-                  <h3 className="font-black text-slate-400 uppercase tracking-[0.2em] text-[10px]">{col.title}</h3>
+                  <h3 className="font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest text-[11px]">{col.title}</h3>
                 </div>
               </div>
-              <div className="flex-1 bg-bloom-bg/30 border-2 border-white rounded-[2.5rem] p-6 space-y-4">
+              <div className="flex-1 bg-bloom-bg/40 dark:bg-slate-800/30 border-2 border-white dark:border-slate-800 rounded-3xl p-4 sm:p-6 space-y-4">
                 <TaskSkeleton />
                 <TaskSkeleton />
               </div>
@@ -342,14 +407,14 @@ export default function Kanban() {
           ))}
         </div>
       ) : tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-slate-800/40 rounded-[3rem] border border-bloom-pink/10 dark:border-slate-700/30 max-w-lg mx-auto my-12 shadow-sm">
-          <LayoutList className="w-16 h-16 text-bloom-pink mb-4 animate-pulse" />
-          <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">No tasks yet</h3>
-          <p className="text-sm text-slate-400 dark:text-slate-300 mb-6 font-medium">Start by adding your first task to see it on the Kanban board.</p>
+        <div className="flex flex-col items-center justify-center text-center p-8 sm:p-12 bg-white dark:bg-slate-800/40 rounded-3xl border border-bloom-pink/10 dark:border-slate-700/30 max-w-lg mx-auto my-6 shadow-sm">
+          <LayoutList className="w-14 h-14 text-bloom-pink mb-4 animate-pulse" />
+          <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white mb-2">No tasks yet</h3>
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-300 mb-6 font-medium">Start by adding your first task to see it on the Kanban board.</p>
           <button 
             type="button"
             onClick={() => openAddModal("TODO")}
-            className="px-6 py-3 bg-bloom-pink text-white font-black rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            className="px-6 py-3 bg-bloom-pink text-white font-black text-sm rounded-2xl shadow-lg shadow-bloom-pink/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
             Add Task
           </button>
@@ -360,8 +425,13 @@ export default function Kanban() {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
-            {COLUMNS.map((col) => (
+          <div className={cn(
+            "flex gap-4 sm:gap-6 pb-6 custom-scrollbar",
+            activeMobileColumn === "ALL" 
+              ? "overflow-x-auto snap-x snap-mandatory flex-nowrap" 
+              : "flex-col md:flex-row md:overflow-x-auto"
+          )}>
+            {visibleColumns.map((col) => (
               <KanbanColumn 
                 key={col.id}
                 col={col}
@@ -369,6 +439,7 @@ export default function Kanban() {
                 openAddModal={openAddModal}
                 onTaskClick={openEditModal}
                 isLoading={isLoading}
+                isSingleMobileView={activeMobileColumn !== "ALL"}
               />
             ))}
           </div>
@@ -378,30 +449,44 @@ export default function Kanban() {
   );
 }
 
-function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any) {
+function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading, isSingleMobileView }: any) {
   const { setNodeRef } = useDroppable({ id: col.id });
 
   return (
-    <div className="flex-1 flex flex-col gap-3 sm:gap-4 min-w-[270px] sm:min-w-[320px]">
-      <div className="flex items-center justify-between px-2 sm:px-4">
-        <div className="flex items-center gap-3">
+    <div className={cn(
+      "flex flex-col gap-3 min-w-0",
+      isSingleMobileView 
+        ? "w-full md:min-w-[320px] md:flex-1" 
+        : "w-[85vw] sm:w-[320px] md:w-auto md:min-w-[300px] md:flex-1 shrink-0 snap-center"
+    )}>
+      {/* Column Header */}
+      <div className="flex items-center justify-between px-2 sm:px-3">
+        <div className="flex items-center gap-2.5">
           <div className={cn("w-3 h-3 rounded-full shadow-sm", col.color)} />
-          <h3 className="font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] text-[10px]">
+          <h3 className="font-black text-slate-600 dark:text-slate-200 uppercase tracking-widest text-[11px] sm:text-xs">
             {col.title}
           </h3>
-          <span className="bg-white dark:bg-slate-850 text-[10px] font-black text-slate-300 dark:text-slate-500 w-6 h-6 rounded-lg flex items-center justify-center border border-slate-50 dark:border-slate-700/60 shadow-sm">{tasks.length}</span>
+          <span className={cn(
+            "text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm",
+            col.badgeColor || "bg-slate-100 text-slate-500"
+          )}>
+            {tasks.length}
+          </span>
         </div>
         <button 
+          type="button"
           onClick={() => openAddModal(col.id)}
-          className="p-1.5 bg-white dark:bg-slate-800 rounded-xl text-slate-300 dark:text-slate-500 hover:text-bloom-pink shadow-sm border border-slate-50 dark:border-slate-700/60 transition-colors cursor-pointer"
+          className="p-1.5 bg-white dark:bg-slate-800 rounded-xl text-slate-400 dark:text-slate-400 hover:text-bloom-pink dark:hover:text-bloom-pink shadow-sm border border-slate-100 dark:border-slate-700 transition-colors cursor-pointer active:scale-95"
+          title={`Add task to ${col.title}`}
         >
           <Plus className="w-4 h-4" />
         </button>
       </div>
  
+      {/* Column Drop Area & Task List */}
       <div 
         ref={setNodeRef}
-        className="flex-1 bg-bloom-bg/30 dark:bg-slate-800/20 border-2 border-white dark:border-slate-800/30 rounded-2xl sm:rounded-3xl p-3 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto"
+        className="flex-1 bg-bloom-bg/40 dark:bg-slate-800/25 border-2 border-white dark:border-slate-800/40 rounded-2xl sm:rounded-3xl p-3 sm:p-5 space-y-3 sm:space-y-4 min-h-[380px]"
       >
         {isLoading ? (
           <>
@@ -420,8 +505,16 @@ function KanbanColumn({ col, tasks, openAddModal, onTaskClick, isLoading }: any)
         )}
  
         {!isLoading && tasks.length === 0 && (
-          <div className="h-32 border-2 border-dashed border-slate-100 dark:border-slate-700/40 rounded-[2rem] flex flex-col items-center justify-center gap-2 group hover:border-bloom-pink/20 transition-colors cursor-pointer" onClick={() => openAddModal(col.id)}>
-            <p className="text-[10px] font-black text-slate-200 dark:text-slate-650 uppercase tracking-widest group-hover:text-bloom-pink/40">Drop items here</p>
+          <div 
+            className="h-36 border-2 border-dashed border-slate-200/70 dark:border-slate-700/50 rounded-2xl flex flex-col items-center justify-center gap-2 group hover:border-bloom-pink/30 transition-all cursor-pointer p-4 text-center bg-white/30 dark:bg-slate-800/10" 
+            onClick={() => openAddModal(col.id)}
+          >
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-300 dark:text-slate-400 group-hover:text-bloom-pink transition-colors">
+              <Plus className="w-4 h-4" />
+            </div>
+            <p className="text-[10px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest group-hover:text-bloom-pink">
+              Add task here
+            </p>
           </div>
         )}
       </div>
