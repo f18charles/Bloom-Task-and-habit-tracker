@@ -5,7 +5,6 @@ interface User {
   id: string;
   email: string;
   displayName: string;
-  points: number;
 }
 
 interface AuthState {

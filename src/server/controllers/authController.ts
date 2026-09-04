@@ -16,11 +16,11 @@ export const register = async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, passwordHash, displayName, points: 0 }
+      data: { email, passwordHash, displayName }
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
-    res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName, points: user.points }, token } });
+    res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName }, token } });
   } catch (error: any) {
     console.error(" Registration error:", error);
     let errorMessage = "Failed to register";
@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
-    res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName, points: user.points }, token } });
+    res.json({ data: { user: { id: user.id, email: user.email, displayName: user.displayName }, token } });
   } catch (error: any) {
     console.error(" Login error:", error);
     let errorMessage = "Failed to login";
@@ -63,7 +63,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
     if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ data: { id: user.id, email: user.email, displayName: user.displayName, points: user.points } });
+    res.json({ data: { id: user.id, email: user.email, displayName: user.displayName } });
   } catch (error) {
     res.status(500).json({ error: "Failed to get user" });
   }

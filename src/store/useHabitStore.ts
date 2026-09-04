@@ -6,7 +6,6 @@ export interface Habit {
   id: string;
   title: string;
   frequency: "DAILY" | "WEEKLY";
-  points: number;
   logs: { completedAt: string }[];
 }
 

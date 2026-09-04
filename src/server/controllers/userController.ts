@@ -41,8 +41,7 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 5);
 
-    // Points history for the last 7 days
-    const pointsHistory = [];
+    // Activity history for the last 7 days
     const taskHistory = [];
     const habitHistory = [];
     for (let i = 6; i >= 0; i--) {
@@ -57,11 +56,9 @@ export const getStats = async (req: AuthRequest, res: Response) => {
         const compDate = new Date(t.completedAt);
         return compDate >= start && compDate <= end;
       });
-      const taskPointsSum = tasksDoneInDay.reduce((sum, t) => sum + (t.points || 10), 0);
       const tasksCount = tasksDoneInDay.length;
 
-      // Calculate habit points and logs for this day range
-      let totalHabitPoints = 0;
+      // Calculate habit logs for this day range
       let habitsCount = 0;
 
       userHabits.forEach(h => {
@@ -72,19 +69,12 @@ export const getStats = async (req: AuthRequest, res: Response) => {
           if (!l.completedAt) return;
           const compDate = new Date(l.completedAt);
           if (compDate >= start && compDate <= end) {
-            totalHabitPoints += (h.points || 5);
             habitsCount++;
           }
         });
       });
 
-      const totalPoints = taskPointsSum + totalHabitPoints;
       const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-
-      pointsHistory.push({
-        name: dayName,
-        points: totalPoints
-      });
 
       taskHistory.push({
         day: dayName,
@@ -99,11 +89,9 @@ export const getStats = async (req: AuthRequest, res: Response) => {
 
     res.json({
       data: {
-        points: user?.points || 0,
         tasksCompleted: completedTasksCount,
         habitsActive: user?._count.habits || 0,
         recentActivity: recentTasks,
-        pointsHistory,
         taskHistory,
         habitHistory
       }

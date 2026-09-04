@@ -26,7 +26,6 @@ export interface Task {
   reminderAt?: string;
   isRecurring?: boolean;
   recurrenceRule?: "DAILY" | "WEEKLY" | "MONTHLY";
-  points?: number;
   googleEventId?: string;
   createdAt: string;
   completedAt?: string | null;

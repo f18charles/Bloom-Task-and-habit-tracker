@@ -48,7 +48,6 @@ export async function processRecurringTasks() {
               status: "TODO",
               priority: task.priority,
               dueDate: nextDueDateIso,
-              points: task.points || 10,
               isRecurring: true,
               recurrenceRule: task.recurrenceRule,
               createdAt: new Date().toISOString(),

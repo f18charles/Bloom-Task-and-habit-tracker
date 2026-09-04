@@ -12,7 +12,6 @@ model User {
   email        String   @unique
   passwordHash String
   displayName  String
-  points       Int      @default(0)
   tasks        Json     @default("[]")
   createdAt    DateTime @default(now())
 
@@ -39,7 +38,6 @@ model Habit {
   title        String
   frequency    String    @default("DAILY") // DAILY, WEEKLY
   reminderTime String?
-  points       Int       @default(5)
   logs         Json      @default("[]")
   createdAt    DateTime  @default(now())
 }

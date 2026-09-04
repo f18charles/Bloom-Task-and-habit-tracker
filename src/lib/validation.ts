@@ -33,7 +33,6 @@ export const taskSchema = z.object({
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
   dueDate: z.string().optional().nullable(),
   reminderAt: z.string().optional().nullable(),
-  points: z.number().int().positive().default(10),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional().nullable(),
   syncToGoogle: z.boolean().optional(),

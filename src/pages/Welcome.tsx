@@ -321,7 +321,7 @@ export default function Welcome() {
     },
     {
       q: "How does the 3-Level Task hierarchy work?",
-      a: "Bloom lets you structure complex objectives into 3 intuitive levels: Level 1 (Main Root Tasks), Level 2 (Subtasks for major phases), and Level 3 (Micro-steps & checklists). This lets you break large goals down into manageable actions while tracking progress automatically."
+      a: "Bloom lets you structure complex objectives into 3 intuitive levels: Level 1 (Main Root Tasks), Level 2 (Subtasks for major phases), and Level 3 (steps & checklists). This lets you break large goals down into manageable actions while tracking progress automatically."
     },
     {
       q: "Can I set tasks to repeat automatically?",
@@ -779,7 +779,7 @@ export default function Welcome() {
                                           <CornerDownRight className="w-3 h-3 text-bloom-pink/60 shrink-0" />
                                           <input
                                             type="text"
-                                            placeholder="Add micro-step (Level 3)..."
+                                            placeholder="Add step..."
                                             value={newLevel3Inputs[st2.id] || ""}
                                             onChange={(e) => setNewLevel3Inputs({ ...newLevel3Inputs, [st2.id]: e.target.value })}
                                             onKeyDown={(e) => {
@@ -808,7 +808,7 @@ export default function Welcome() {
                               <div className="flex gap-2 pt-1">
                                 <input
                                   type="text"
-                                  placeholder="Add subtask (Level 2)..."
+                                  placeholder="Add subtask..."
                                   value={newSubtaskInputs[task.id] || ""}
                                   onChange={(e) => setNewSubtaskInputs({ ...newSubtaskInputs, [task.id]: e.target.value })}
                                   onKeyDown={(e) => {

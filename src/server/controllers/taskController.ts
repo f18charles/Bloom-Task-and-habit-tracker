@@ -80,7 +80,6 @@ export const createTask = async (req: AuthRequest, res: Response) => {
       reminderAt,
       isRecurring,
       recurrenceRule,
-      points, 
       syncToGoogle, 
       subtasks 
     } = req.body;
@@ -106,7 +105,6 @@ export const createTask = async (req: AuthRequest, res: Response) => {
       reminderAt: reminderAt ? new Date(reminderAt).toISOString() : undefined,
       isRecurring: Boolean(isRecurring),
       recurrenceRule: recurrenceRule || undefined,
-      points: points || 10,
       createdAt: new Date().toISOString(),
       completedAt: status === "DONE" ? new Date().toISOString() : null,
       subtasks: sanitizeSubtasks(subtasks)
@@ -146,14 +144,13 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
       reminderAt,
       isRecurring,
       recurrenceRule,
-      points, 
       syncToGoogle, 
       subtasks 
     } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
-      select: { tasks: true, points: true }
+      select: { tasks: true }
     });
 
     const tasks = parseTasks(user?.tasks);
@@ -181,7 +178,6 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
       ...(reminderAt !== undefined ? { reminderAt: reminderAt ? new Date(reminderAt).toISOString() : undefined } : {}),
       ...(isRecurring !== undefined ? { isRecurring: Boolean(isRecurring) } : {}),
       ...(recurrenceRule !== undefined ? { recurrenceRule: recurrenceRule || undefined } : {}),
-      ...(points !== undefined ? { points } : {}),
       completedAt,
       ...(subtasks !== undefined ? { subtasks: sanitizeSubtasks(subtasks) } : {})
     };
@@ -197,18 +193,10 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
 
     tasks[taskIndex] = updatedTask;
 
-    let pointsDelta = 0;
-    if (!wasDone && isDone) {
-      pointsDelta = updatedTask.points || 10;
-    } else if (wasDone && !isDone) {
-      pointsDelta = -(existingTask.points || 10);
-    }
-
     await prisma.user.update({
       where: { id: req.user!.id },
       data: {
-        tasks: tasks as any,
-        ...(pointsDelta !== 0 ? { points: { increment: pointsDelta } } : {})
+        tasks: tasks as any
       }
     });
 

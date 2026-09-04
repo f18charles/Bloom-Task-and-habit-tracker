@@ -46,7 +46,6 @@ export async function sendDailyDigest(user: any, pendingTasks: any[], habitsToCo
     <h2>Daily Habits</h2>
     ${habitsHtml}
     
-    <p>Current Points: <strong>${user.points}</strong></p>
     <p>Keep blooming!</p>
   `;
 

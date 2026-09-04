@@ -19,7 +19,7 @@ import { CardSkeleton } from "../components/Skeleton.tsx";
 export default function Habits() {
   const { habits, fetchHabits, addHabit, logHabit, deleteHabit, isLoading } = useHabitStore();
   const [showAdd, setShowAdd] = useState(false);
-  const [newHabit, setNewHabit] = useState({ title: "", frequency: "DAILY" as const, points: 5 });
+  const [newHabit, setNewHabit] = useState({ title: "", frequency: "DAILY" as const });
 
   useEffect(() => {
     fetchHabits();
@@ -28,7 +28,7 @@ export default function Habits() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     await addHabit(newHabit);
-    setNewHabit({ title: "", frequency: "DAILY", points: 5 });
+    setNewHabit({ title: "", frequency: "DAILY" });
     setShowAdd(false);
   };
 

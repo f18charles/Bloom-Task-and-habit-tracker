@@ -35,14 +35,13 @@ export const getHabits = async (req: AuthRequest, res: Response) => {
 
 export const createHabit = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, frequency, reminderTime, points } = req.body;
+    const { title, frequency, reminderTime } = req.body;
     const habit = await prisma.habit.create({
       data: {
         userId: req.user!.id,
         title,
         frequency: frequency || "DAILY",
         reminderTime,
-        points: points || 5,
         logs: []
       }
     });
@@ -83,12 +82,6 @@ export const logHabit = async (req: AuthRequest, res: Response) => {
     await prisma.habit.update({
       where: { id },
       data: { logs: updatedLogs as any }
-    });
-
-    // Update user points
-    await prisma.user.update({
-      where: { id: req.user!.id },
-      data: { points: { increment: habit.points } }
     });
 
     res.json({ data: newLog });

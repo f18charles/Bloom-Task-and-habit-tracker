@@ -22,7 +22,6 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
     dueDate: "",
     isRecurring: false,
     recurrenceRule: "DAILY" as "DAILY" | "WEEKLY" | "MONTHLY",
-    points: 10,
     syncToGoogle: false
   });
 
@@ -45,7 +44,6 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
         dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
         isRecurring: !!task.isRecurring,
         recurrenceRule: task.recurrenceRule || "DAILY",
-        points: task.points || 10,
         syncToGoogle: !!task.googleEventId
       });
 
@@ -84,7 +82,6 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
         dueDate: "",
         isRecurring: false,
         recurrenceRule: "DAILY",
-        points: 10,
         syncToGoogle: false
       });
       setSubtasks([]);
@@ -244,9 +241,6 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                   <h2 className="text-lg font-bold text-gray-800 dark:text-white leading-tight">
                     {task ? "Edit Task" : "Create New Task"}
                   </h2>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    Supports 3-Level Nesting (Root &rarr; Subtask &rarr; Steps)
-                  </span>
                 </div>
               </div>
               <button 
@@ -263,7 +257,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
               {/* Level 1: Root Task Title */}
               <div className="space-y-2">
                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400">
-                  Task Title (Level 1) <span className="text-bloom-pink">*</span>
+                  Task Title <span className="text-bloom-pink">*</span>
                 </label>
                 <input 
                   autoFocus
@@ -378,7 +372,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400">
-                      Subtasks (Levels 2 & 3)
+                      Subtasks
                     </label>
                     {totalStepsCount > 0 && (
                       <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
@@ -430,7 +424,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                               type="button"
                               onClick={() => toggleExpandLevel2(st2.id)}
                               className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center gap-1 transition-colors cursor-pointer"
-                              title="Toggle Level 3 steps"
+                              title="Toggle steps"
                             >
                               <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">L3</span>
                               <span>{level3Completed}/{level3Count}</span>
@@ -492,7 +486,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                               <input 
                                 type="text"
                                 className="flex-1 bg-slate-50 dark:bg-slate-800/80 rounded-xl px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-bloom-pink text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
-                                placeholder="Add micro-step (Level 3)..."
+                                placeholder="Add step..."
                                 value={newLevel3Inputs[st2.id] || ""}
                                 onChange={e => setNewLevel3Inputs({ ...newLevel3Inputs, [st2.id]: e.target.value })}
                                 onKeyDown={e => {
@@ -522,7 +516,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                     <input 
                       type="text"
                       className="flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-xl px-4 py-2.5 text-sm outline-none border border-slate-100 dark:border-slate-700/60 focus:border-bloom-pink text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
-                      placeholder="Add a subtask (Level 2)..."
+                      placeholder="Add a subtask..."
                       value={newLevel2Title}
                       onChange={e => setNewLevel2Title(e.target.value)}
                       onKeyDown={e => {
