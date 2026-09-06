@@ -23,14 +23,10 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { user, logout, checkAuth, isLoading } = useAuthStore();
+  const { user, logout, isLoading } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
 
   if (isLoading) {
     return (

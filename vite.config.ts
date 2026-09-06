@@ -16,10 +16,14 @@ export default defineConfig(({mode}) => {
       },
     },
     build: {
+      modulePreload: false,
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
+              if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/') || id.includes('/scheduler/')) {
+                return 'vendor-react';
+              }
               if (id.includes('recharts') || id.includes('d3-')) {
                 return 'vendor-charts';
               }

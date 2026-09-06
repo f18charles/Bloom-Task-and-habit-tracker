@@ -29,7 +29,7 @@ function PageLoading() {
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
   
-  if (isLoading) return null;
+  if (isLoading) return <PageLoading />;
   if (!user) return <Navigate to="/welcome" />;
   
   return (
@@ -99,7 +99,9 @@ export default function App() {
           <Route 
             path="/" 
             element={
-              isLoading ? null : user ? (
+              isLoading ? (
+                <PageLoading />
+              ) : user ? (
                 <ProtectedRoute><Dashboard /></ProtectedRoute>
               ) : (
                 <Welcome />
