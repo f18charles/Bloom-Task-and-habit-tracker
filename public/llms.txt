@@ -1,0 +1,17 @@
+# Bloom - Task & Habit Tracker
+
+> Bloom is a productivity and mindfulness application for organizing tasks, tracking habits, and cultivating daily progress with clean visual analytics.
+
+## Overview
+
+Bloom combines hierarchical 3-level task management, flexible habit tracking, Kanban workflows, interactive calendar scheduling, and daily progress analytics into a fast, accessible web experience.
+
+## Core Links
+
+- [Bloom Dashboard](https://bloom-iota-eight-40.vercel.app/): Main application workspace, focus area, upcoming priority tasks, and daily habit tracker.
+- [Product Features & Welcome](https://bloom-iota-eight-40.vercel.app/welcome): Product showcase explaining task hierarchies, micro-steps, recurring schedules, and offline-ready features.
+- [User Authentication](https://bloom-iota-eight-40.vercel.app/auth): Secure email authentication, registration, and session management.
+- [Kanban Board](https://bloom-iota-eight-40.vercel.app/kanban): Multi-column visual task board with drag-and-drop workflow statuses.
+- [Habit Tracker](https://bloom-iota-eight-40.vercel.app/habits): Habit scheduling, daily logs, and consistency tracking.
+- [Calendar Schedule](https://bloom-iota-eight-40.vercel.app/calendar): Monthly and daily scheduling view with Google Calendar sync support.
+- [Progress Analytics](https://bloom-iota-eight-40.vercel.app/progress): Activity metrics and productivity charts.

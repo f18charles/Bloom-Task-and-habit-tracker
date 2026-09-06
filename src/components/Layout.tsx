@@ -127,8 +127,11 @@ export default function Layout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <button 
+              type="button"
               onClick={logout}
-              className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-red-500 transition-colors shrink-0"
+              aria-label="Log out"
+              title="Log out"
+              className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-500 hover:text-red-500 transition-colors shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -186,11 +189,11 @@ export default function Layout({ children }: { children: ReactNode }) {
                 "flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition-all min-h-[46px] min-w-0 text-center relative",
                 isActive 
                   ? "text-bloom-pink font-extrabold bg-bloom-pink/10 dark:bg-bloom-pink/20" 
-                  : "text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
               )}
             >
               <Icon className={cn("w-5 h-5 shrink-0 transition-transform", isActive && "scale-110 text-bloom-pink")} />
-              <span className={cn("text-[9.5px] sm:text-[10px] tracking-tight leading-none truncate max-w-full block", isActive ? "font-bold" : "font-medium")}>
+              <span className={cn("text-[9.5px] sm:text-[10px] tracking-tight leading-none truncate max-w-full block", isActive ? "font-bold" : "font-semibold text-slate-600 dark:text-slate-400")}>
                 {item.name}
               </span>
               {isActive && (

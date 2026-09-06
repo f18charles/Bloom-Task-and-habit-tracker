@@ -143,6 +143,8 @@ export default function Habits() {
                 <div className="space-y-4">
                   <label className="block text-xs font-black uppercase tracking-[0.2em] text-bloom-pink">Frequency</label>
                   <select 
+                    id="habit-frequency-select"
+                    aria-label="Habit frequency"
                     className="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-600 outline-none hover:bg-slate-100 transition-colors"
                     value={newHabit.frequency}
                     onChange={e => setNewHabit({...newHabit, frequency: e.target.value as any})}
@@ -217,8 +219,11 @@ export default function Habits() {
                    </div>
                    <div className="flex gap-2">
                      <button 
+                       type="button"
                        onClick={() => deleteHabit(habit.id)}
-                       className="p-2 text-slate-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                       aria-label={`Delete habit "${habit.title}"`}
+                       title="Delete habit"
+                       className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                      >
                        <Trash2 className="w-5 h-5" />
                      </button>
@@ -226,27 +231,29 @@ export default function Habits() {
                 </div>
 
                 <div>
-                  <h4 className={cn("text-xl font-black tracking-tight mb-2", completed ? "text-slate-400 line-through" : "text-slate-800")}>
+                  <h3 className={cn("text-xl font-black tracking-tight mb-2", completed ? "text-slate-500 line-through" : "text-slate-800 dark:text-white")}>
                     {habit.title}
-                  </h4>
+                  </h3>
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full border border-transparent">
+                    <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-transparent">
                       <CalendarDays className="w-3 h-3" /> {habit.frequency}
                     </span>
                     {/* Streak indicator removed */}
                   </div>
                 </div>
 
-                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
+                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">habit</span>
-                    <span className="text-sm font-bold text-slate-500">Scheduled</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">habit</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Scheduled</span>
                   </div>
                   <button 
+                    type="button"
                     onClick={() => !completed && logHabit(habit.id)}
                     disabled={completed}
+                    aria-label={completed ? `Habit "${habit.title}" completed today` : `Mark habit "${habit.title}" done today`}
                     className={cn(
-                      "px-8 py-3 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95",
+                      "px-8 py-3 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95 cursor-pointer",
                       completed 
                         ? "bg-bloom-green-light text-bloom-dark-green shadow-none cursor-default" 
                         : "bg-bloom-pink text-white hover:brightness-105"

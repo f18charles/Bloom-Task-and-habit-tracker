@@ -246,7 +246,9 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
               <button 
                 type="button"
                 onClick={onClose} 
-                className="p-2 hover:bg-slate-200/50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                aria-label="Close modal"
+                title="Close modal"
+                className="p-2 hover:bg-slate-200/50 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -400,6 +402,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                             <button
                               type="button"
                               onClick={() => toggleLevel2Subtask(i2)}
+                              aria-label={st2.isCompleted ? `Mark subtask "${st2.title}" incomplete` : `Mark subtask "${st2.title}" complete`}
                               className={cn(
                                 "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer",
                                 st2.isCompleted 
@@ -423,6 +426,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                             <button
                               type="button"
                               onClick={() => toggleExpandLevel2(st2.id)}
+                              aria-label={`Toggle steps for ${st2.title}`}
                               className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center gap-1 transition-colors cursor-pointer"
                               title="Toggle steps"
                             >
@@ -435,6 +439,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                             <button 
                               type="button"
                               onClick={() => removeLevel2Subtask(i2)}
+                              aria-label={`Remove subtask "${st2.title}"`}
                               className="p-1.5 text-slate-300 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
                               title="Remove subtask"
                             >
@@ -453,6 +458,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                                   <button
                                     type="button"
                                     onClick={() => toggleLevel3Subtask(i2, i3)}
+                                    aria-label={st3.isCompleted ? `Mark step "${st3.title}" incomplete` : `Mark step "${st3.title}" complete`}
                                     className={cn(
                                       "w-4 h-4 rounded border flex items-center justify-center transition-all shrink-0 cursor-pointer",
                                       st3.isCompleted 
@@ -472,6 +478,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                                 <button
                                   type="button"
                                   onClick={() => removeLevel3Subtask(i2, i3)}
+                                  aria-label={`Remove step "${st3.title}"`}
                                   className="p-1 text-slate-300 hover:text-red-500 rounded transition-colors cursor-pointer"
                                   title="Remove step"
                                 >
@@ -499,6 +506,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                               <button 
                                 type="button"
                                 onClick={() => addLevel3Subtask(i2, st2.id)}
+                                aria-label={`Add step to "${st2.title}"`}
                                 className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-bloom-pink hover:text-white rounded-xl text-slate-500 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
                               >
                                 <Plus className="w-3 h-3" />
@@ -529,6 +537,7 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                     <button 
                       type="button"
                       onClick={addLevel2Subtask}
+                      aria-label="Add subtask"
                       className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-bloom-pink hover:text-white rounded-xl text-slate-600 dark:text-slate-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <Plus className="w-4 h-4" />

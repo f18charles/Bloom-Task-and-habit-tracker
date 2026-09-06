@@ -149,19 +149,19 @@ export default function Calendar() {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-3xl shadow-sm border border-bloom-pink/10 gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">
+          <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
             {format(currentMonth, 'MMMM yyyy')}
           </h2>
-          <p className="text-slate-400">Plan your events and view your tasks inline.</p>
+          <p className="text-slate-500 dark:text-slate-300">Plan your events and view your tasks inline.</p>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100 text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-slate-500">
+        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-100 dark:border-slate-700 text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-slate-600 dark:text-slate-300">
             <span className="w-3 h-3 rounded bg-sky-100 border border-sky-200 inline-block"></span>
             Events
           </div>
-          <div className="flex items-center gap-1.5 font-bold text-slate-500">
+          <div className="flex items-center gap-1.5 font-bold text-slate-600 dark:text-slate-300">
             <span className="w-3 h-3 rounded bg-bloom-pink-light border border-bloom-pink/20 inline-block"></span>
             Tasks
           </div>
@@ -171,14 +171,26 @@ export default function Calendar() {
           <button 
             type="button"
             onClick={() => openAddModal(new Date())}
-            className="p-3 bg-bloom-pink text-white rounded-2xl hover:bg-bloom-pink/90 font-bold text-sm tracking-wide transition-all shadow-md shadow-bloom-pink/20 flex items-center gap-2"
+            className="p-3 bg-bloom-pink text-white rounded-2xl hover:bg-bloom-pink/90 font-bold text-sm tracking-wide transition-all shadow-md shadow-bloom-pink/20 flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> New Event
           </button>
-          <button onClick={prevMonth} className="p-3 bg-bloom-bg rounded-2xl hover:bg-bloom-pink-light text-bloom-pink transition-all">
+          <button 
+            type="button"
+            onClick={prevMonth} 
+            aria-label="Previous month"
+            title="Previous month"
+            className="p-3 bg-bloom-bg dark:bg-slate-700 rounded-2xl hover:bg-bloom-pink-light dark:hover:bg-slate-600 text-bloom-pink transition-all cursor-pointer"
+          >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <button onClick={nextMonth} className="p-3 bg-bloom-bg rounded-2xl hover:bg-bloom-pink-light text-bloom-pink transition-all">
+          <button 
+            type="button"
+            onClick={nextMonth} 
+            aria-label="Next month"
+            title="Next month"
+            className="p-3 bg-bloom-bg dark:bg-slate-700 rounded-2xl hover:bg-bloom-pink-light dark:hover:bg-slate-600 text-bloom-pink transition-all cursor-pointer"
+          >
             <ChevronRight className="w-6 h-6" />
           </button>
         </div>
