@@ -16,12 +16,27 @@ export default defineConfig(({mode}) => {
       },
     },
     build: {
-      modulePreload: false,
+      modulePreload: {
+        resolveDependencies(filename, deps, { hostId, hostType }) {
+          return deps.filter(
+            (dep) =>
+              !dep.includes('vendor-charts') &&
+              !dep.includes('vendor-dnd') &&
+              !dep.includes('Kanban') &&
+              !dep.includes('Progress') &&
+              !dep.includes('Calendar') &&
+              !dep.includes('Settings') &&
+              !dep.includes('ResetPassword') &&
+              !dep.includes('Auth') &&
+              !dep.includes('Welcome')
+          );
+        },
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/') || id.includes('/scheduler/')) {
+              if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/') || id.includes('/scheduler/') || id.includes('clsx') || id.includes('tailwind-merge')) {
                 return 'vendor-react';
               }
               if (id.includes('recharts') || id.includes('d3-')) {
