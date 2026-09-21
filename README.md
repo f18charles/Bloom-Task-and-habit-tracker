@@ -182,6 +182,10 @@ npm start
 - `PUT /api/users/profile` - Update user display name and profile settings
 - `GET /api/export/csv` - Download task and habit history as CSV files
 
+### Feedback
+- `POST /api/feedback` - Submit user feedback, suggestions, or bug reports (persisted with a PostgreSQL `jsonb` payload)
+- `GET /api/feedback` - Retrieve past feedback submissions for the authenticated user
+
 ---
 
 ## License

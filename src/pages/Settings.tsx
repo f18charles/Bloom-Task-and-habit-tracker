@@ -1,7 +1,21 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore.ts";
+import { useToastStore } from "../store/useToastStore.ts";
 import api from "../api/axios.ts";
-import { Calendar, CheckCircle2, AlertCircle, RefreshCw, LogOut } from "lucide-react";
+import { 
+  Calendar, 
+  CheckCircle2, 
+  AlertCircle, 
+  RefreshCw, 
+  LogOut,
+  MessageSquare,
+  Send,
+  Star,
+  Rocket,
+  Bug,
+  Lightbulb,
+  Check
+} from "lucide-react";
 import { cn } from "../lib/utils.ts";
 import { motion } from "motion/react";
 
@@ -12,8 +26,21 @@ export default function Settings() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Feedback state
+  const [feedbackCategory, setFeedbackCategory] = useState<"GENERAL" | "FEATURE" | "BUG" | "IMPROVEMENT">("GENERAL");
+  const [feedbackRating, setFeedbackRating] = useState<number>(0);
+  const [feedbackHoverRating, setFeedbackHoverRating] = useState<number>(0);
+  const [feedbackTitle, setFeedbackTitle] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackIncludeSpecs, setFeedbackIncludeSpecs] = useState(true);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
+  const [pastFeedbacks, setPastFeedbacks] = useState<Array<{ id: string; feedback: any; createdAt: string }>>([]);
+  const [showPastFeedbacks, setShowPastFeedbacks] = useState(false);
+
   useEffect(() => {
     fetchCalendarStatus();
+    fetchFeedbacks();
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
@@ -23,6 +50,56 @@ export default function Settings() {
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  const fetchFeedbacks = async () => {
+    try {
+      const { data } = await api.get("/feedback");
+      if (data?.data) {
+        setPastFeedbacks(data.data);
+      }
+    } catch {
+      // Non-critical background fetch
+    }
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackMessage.trim()) return;
+
+    setIsSubmittingFeedback(true);
+    setFeedbackSuccess(null);
+
+    try {
+      const payload = {
+        category: feedbackCategory,
+        rating: feedbackRating > 0 ? feedbackRating : undefined,
+        title: feedbackTitle.trim() || undefined,
+        message: feedbackMessage.trim(),
+        pageUrl: window.location.pathname,
+        extraData: {
+          includeSpecs: feedbackIncludeSpecs,
+          screenResolution: feedbackIncludeSpecs ? `${window.screen.width}x${window.screen.height}` : undefined,
+          viewport: feedbackIncludeSpecs ? `${window.innerWidth}x${window.innerHeight}` : undefined,
+          colorScheme: document.documentElement.classList.contains("dark") ? "dark" : "light",
+        },
+      };
+
+      const { data } = await api.post("/feedback", payload);
+      useToastStore.getState().addToast("Feedback submitted successfully. Thank you!", "success");
+      setFeedbackSuccess("Thank you for your feedback! Your submission has been saved.");
+      setFeedbackTitle("");
+      setFeedbackMessage("");
+      setFeedbackRating(0);
+      if (data?.data) {
+        setPastFeedbacks((prev) => [data.data, ...prev]);
+      }
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || "Failed to submit feedback. Please try again.";
+      useToastStore.getState().addToast(errorMsg, "error");
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
 
   const fetchCalendarStatus = async () => {
     try {
@@ -177,6 +254,233 @@ export default function Settings() {
                   <p className="text-[10px] font-bold text-orange-600 dark:text-orange-300 uppercase tracking-widest">Two-Way Pull</p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 mt-0.5">Events are synced from Google.</p>
                 </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Feedback Section */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Feedback & Feature Requests</h2>
+          {pastFeedbacks.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowPastFeedbacks(!showPastFeedbacks)}
+              className="text-xs font-semibold text-bloom-pink hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              {showPastFeedbacks ? "Hide past submissions" : `View past submissions (${pastFeedbacks.length})`}
+            </button>
+          )}
+        </div>
+
+        <div className="bloom-card p-4 sm:p-6 space-y-5">
+          <div>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-300">
+              Help us improve Bloom. Whether you found an issue, have an idea for a new capability, or want to share your experience, we read every note.
+            </p>
+          </div>
+
+          {feedbackSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3.5 rounded-xl bg-bloom-green/30 border border-bloom-dark-green/20 text-bloom-dark-green dark:text-green-300 text-xs sm:text-sm flex items-center gap-2.5"
+            >
+              <Check className="w-4 h-4 shrink-0" />
+              <span>{feedbackSuccess}</span>
+            </motion.div>
+          )}
+
+          <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+            {/* Category Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-slate-200">Category</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: "GENERAL", label: "General", icon: MessageSquare },
+                  { id: "FEATURE", label: "Feature", icon: Rocket },
+                  { id: "BUG", label: "Bug Report", icon: Bug },
+                  { id: "IMPROVEMENT", label: "Performance", icon: Lightbulb },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isSelected = feedbackCategory === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setFeedbackCategory(item.id as any)}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
+                        isSelected
+                          ? "bg-bloom-pink text-white border-bloom-pink shadow-xs"
+                          : "bg-slate-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-bloom-pink/40"
+                      )}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Satisfaction Rating */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-700 dark:text-slate-200">Experience Rating</label>
+                {feedbackRating > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackRating(0)}
+                    className="text-[11px] text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 underline cursor-pointer"
+                  >
+                    Clear rating
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isFilled = (feedbackHoverRating || feedbackRating) >= star;
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setFeedbackRating(feedbackRating === star ? 0 : star)}
+                        onMouseEnter={() => setFeedbackHoverRating(star)}
+                        onMouseLeave={() => setFeedbackHoverRating(0)}
+                        className="p-1 text-slate-300 hover:text-amber-400 transition-colors cursor-pointer"
+                        aria-label={`Rate ${star} of 5 stars`}
+                      >
+                        <Star
+                          className={cn(
+                            "w-5 h-5 sm:w-6 sm:h-6 transition-all",
+                            isFilled ? "fill-amber-400 text-amber-400 scale-105" : "text-slate-300 dark:text-slate-600"
+                          )}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
+                  {((feedbackHoverRating || feedbackRating) === 5) && "Excellent"}
+                  {((feedbackHoverRating || feedbackRating) === 4) && "Very Good"}
+                  {((feedbackHoverRating || feedbackRating) === 3) && "Satisfactory"}
+                  {((feedbackHoverRating || feedbackRating) === 2) && "Needs Improvement"}
+                  {((feedbackHoverRating || feedbackRating) === 1) && "Poor"}
+                  {(feedbackHoverRating === 0 && feedbackRating === 0) && "No rating selected"}
+                </span>
+              </div>
+            </div>
+
+            {/* Title / Summary */}
+            <div className="space-y-1.5">
+              <label htmlFor="feedback-title" className="text-xs font-bold text-gray-700 dark:text-slate-200">
+                Title / Summary <span className="text-gray-400 dark:text-slate-500 font-normal">(optional)</span>
+              </label>
+              <input
+                id="feedback-title"
+                type="text"
+                value={feedbackTitle}
+                onChange={(e) => setFeedbackTitle(e.target.value)}
+                placeholder="e.g., Add recurring habit interval or weekly goal chart"
+                maxLength={100}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs sm:text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-bloom-pink transition-colors"
+              />
+            </div>
+
+            {/* Message Body */}
+            <div className="space-y-1.5">
+              <label htmlFor="feedback-message" className="text-xs font-bold text-gray-700 dark:text-slate-200">
+                Details & Thoughts <span className="text-bloom-pink">*</span>
+              </label>
+              <textarea
+                id="feedback-message"
+                required
+                rows={4}
+                value={feedbackMessage}
+                onChange={(e) => setFeedbackMessage(e.target.value)}
+                placeholder="Share your feedback, bug details, or workflow suggestions..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs sm:text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-bloom-pink transition-colors resize-none"
+              />
+            </div>
+
+            {/* Diagnostics Metadata Checkbox */}
+            <div className="flex items-center gap-2.5 pt-1">
+              <input
+                id="feedback-specs"
+                type="checkbox"
+                checked={feedbackIncludeSpecs}
+                onChange={(e) => setFeedbackIncludeSpecs(e.target.checked)}
+                className="w-4 h-4 rounded text-bloom-pink focus:ring-bloom-pink cursor-pointer"
+              />
+              <label htmlFor="feedback-specs" className="text-xs text-gray-500 dark:text-slate-400 cursor-pointer select-none">
+                Include browser and display diagnostics to assist debugging
+              </label>
+            </div>
+
+            {/* Submit Action */}
+            <div className="flex items-center justify-end pt-2">
+              <button
+                type="submit"
+                disabled={isSubmittingFeedback || !feedbackMessage.trim()}
+                className="flex items-center justify-center gap-2 bg-bloom-pink text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-md shadow-bloom-pink/20 hover:brightness-105 transition-all disabled:opacity-50 cursor-pointer w-full sm:w-auto"
+              >
+                {isSubmittingFeedback ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Submit Feedback
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Past Submissions list */}
+          {showPastFeedbacks && pastFeedbacks.length > 0 && (
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-700/60 space-y-3">
+              <h4 className="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider">
+                Your Past Submissions
+              </h4>
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {pastFeedbacks.map((item) => {
+                  const fb = item.feedback || {};
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 text-xs space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide bg-bloom-pink-light text-bloom-pink dark:bg-bloom-pink/20">
+                            {fb.category || "GENERAL"}
+                          </span>
+                          {fb.rating && (
+                            <span className="text-amber-500 font-bold flex items-center gap-0.5">
+                              ★ {fb.rating}/5
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-gray-400 dark:text-slate-400">
+                          {new Date(item.createdAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      {fb.title && <p className="font-semibold text-gray-800 dark:text-white">{fb.title}</p>}
+                      <p className="text-gray-600 dark:text-slate-300 line-clamp-2">{fb.message}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -199,20 +199,9 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
     }
   };
 
-  // Compute total hierarchy progress
-  let totalStepsCount = 0;
-  let completedStepsCount = 0;
-  subtasks.forEach(s2 => {
-    if (s2.subtasks && s2.subtasks.length > 0) {
-      s2.subtasks.forEach(s3 => {
-        totalStepsCount++;
-        if (s3.isCompleted) completedStepsCount++;
-      });
-    } else {
-      totalStepsCount++;
-      if (s2.isCompleted) completedStepsCount++;
-    }
-  });
+  // Compute Level 2 subtasks count (Level 3 subtasks do not account for overall task count)
+  const totalLevel2Count = subtasks.length;
+  const completedLevel2Count = subtasks.filter(s2 => s2.isCompleted).length;
 
   return (
     <AnimatePresence>
@@ -376,9 +365,9 @@ export default function TaskModal({ isOpen, onClose, task, defaultStatus }: Task
                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400">
                       Subtasks
                     </label>
-                    {totalStepsCount > 0 && (
+                    {totalLevel2Count > 0 && (
                       <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                        {completedStepsCount}/{totalStepsCount} completed
+                        {completedLevel2Count}/{totalLevel2Count} completed
                       </span>
                     )}
                   </div>

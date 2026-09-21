@@ -6,6 +6,7 @@ import userRoutes from "./routes/users.ts";
 import calendarRoutes from "./routes/calendar.ts";
 import eventRoutes from "./routes/events.ts";
 import apkRoutes from "./routes/apk.ts";
+import feedbackRoutes from "./routes/feedback.ts";
 import { errorHandler } from "./middleware/errorHandler.ts";
 
 export function setupBackend(app: Express) {
@@ -16,6 +17,7 @@ export function setupBackend(app: Express) {
   app.use("/api/calendar", calendarRoutes);
   app.use("/api/events", eventRoutes);
   app.use("/api/apk", apkRoutes);
+  app.use("/api/feedback", feedbackRoutes);
 
   app.use(errorHandler);
 }

@@ -19,6 +19,15 @@ model User {
   googleToken  GoogleToken?
   events       Event[]
   passwordResetTokens PasswordResetToken[]
+  feedbacks    Feedback[]
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback  Json     @db.JsonB
+  createdAt DateTime @default(now())
 }
 
 model GoogleToken {

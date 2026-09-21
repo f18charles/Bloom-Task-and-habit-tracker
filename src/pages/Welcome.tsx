@@ -607,19 +607,8 @@ export default function Welcome() {
                 <div className="space-y-4">
                   {tasks.map((task) => {
                     const isTaskExpanded = !!expandedTasks[task.id];
-                    let totalSteps = 0;
-                    let completedSteps = 0;
-                    task.subtasks.forEach(s2 => {
-                      if (s2.subtasks && s2.subtasks.length > 0) {
-                        s2.subtasks.forEach(s3 => {
-                          totalSteps++;
-                          if (s3.isCompleted) completedSteps++;
-                        });
-                      } else {
-                        totalSteps++;
-                        if (s2.isCompleted) completedSteps++;
-                      }
-                    });
+                    const totalSteps = task.subtasks ? task.subtasks.length : 0;
+                    const completedSteps = task.subtasks ? task.subtasks.filter(s2 => s2.isCompleted).length : 0;
 
                     return (
                       <motion.div
@@ -668,7 +657,7 @@ export default function Welcome() {
                                 </span>
                                 {totalSteps > 0 && (
                                   <span className="font-semibold text-slate-500 dark:text-slate-400">
-                                    {completedSteps}/{totalSteps} sub-steps
+                                    {completedSteps}/{totalSteps} subtasks
                                   </span>
                                 )}
                               </div>
