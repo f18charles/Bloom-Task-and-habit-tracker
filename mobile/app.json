@@ -5,22 +5,30 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFF5F7"
-    },
+    "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F8FAFC"
+        }
+      ],
+      "expo-font"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bloom.productivity"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FF85A1"
+        "backgroundColor": "#10B981"
       },
       "package": "com.bloom.productivity"
     },
@@ -28,9 +36,11 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
+      "apiUrl": "https://bloom-iota-eight-40.vercel.app",
       "eas": {
-        "projectId": "bloom-productivity-app"
+        "projectId": "3fae49b0-e320-4678-b2e5-1d67bce34a67"
       }
-    }
+    },
+    "owner": "fco1000"
   }
 }
