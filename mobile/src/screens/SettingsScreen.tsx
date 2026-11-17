@@ -5,13 +5,20 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  Switch,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { formatDistanceToNow } from "date-fns";
 import { api, errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import { useSync } from "../offline/SyncContext";
+import {
+  fetchCalendarStatusOfflineFirst,
+  submitFeedbackOfflineFirst,
+} from "../offline/offlineApi";
 import { CalendarStatus } from "../types";
 import { colors, radii } from "../theme";
 import {
@@ -19,6 +26,7 @@ import {
   Button,
   Card,
   Chip,
+  Divider,
   ErrorBanner,
   Input,
   Label,
@@ -36,10 +44,32 @@ const CATEGORIES = [
 type Category = (typeof CATEGORIES)[number]["value"];
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const {
+    user,
+    logout,
+    biometricCapability,
+    biometricSettings,
+    enableBiometrics,
+    disableBiometrics,
+    toggleRequireOnLaunch,
+    refreshBiometricState,
+  } = useAuth();
+
+  const {
+    isOnline,
+    isSyncing,
+    pendingCount,
+    lastSyncedAt,
+    summary,
+    triggerSync,
+    clearLocalCache,
+    refreshStats,
+  } = useSync();
+
   const [calendar, setCalendar] = useState<CalendarStatus>({ connected: false });
   const [refreshing, setRefreshing] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  const [syncingCal, setSyncingCal] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [category, setCategory] = useState<Category>("GENERAL");
@@ -50,17 +80,78 @@ export default function SettingsScreen() {
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      setCalendar(await api.get<CalendarStatus>("/calendar/status"));
+      const [calRes] = await Promise.all([
+        fetchCalendarStatusOfflineFirst(user.id),
+        refreshBiometricState(),
+        refreshStats(),
+      ]);
+      setCalendar(calRes.status);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [user, refreshBiometricState, refreshStats]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const toggleBiometricLogin = async (next: boolean) => {
+    if (bioBusy) return;
+    setBioBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      if (next) {
+        const res = await enableBiometrics(biometricSettings.requireOnLaunch);
+        if (res.ok) {
+          setNotice(`${biometricCapability.label} login enabled for your account.`);
+        } else if (res.error) {
+          setError(res.error);
+        }
+      } else {
+        await disableBiometrics();
+        setNotice(`${biometricCapability.label} login disabled.`);
+      }
+    } finally {
+      setBioBusy(false);
+    }
+  };
+
+  const handleManualSync = async () => {
+    setError(null);
+    setNotice(null);
+    const ok = await triggerSync();
+    if (ok) {
+      setNotice("All device data synced with Bloom server.");
+    } else if (!isOnline) {
+      setError("You're currently offline. Changes remain queued on your phone.");
+    }
+  };
+
+  const handleClearCache = () => {
+    const warn =
+      pendingCount > 0
+        ? `You have ${pendingCount} unsynced ${pendingCount === 1 ? "change" : "changes"} queued offline. Clearing local data will discard them.`
+        : "This clears cached tasks, habits, and events stored on your phone and re-fetches them when online.";
+
+    Alert.alert("Clear Local Storage?", warn, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: pendingCount > 0 ? "Discard & Clear" : "Clear Cache",
+        style: "destructive",
+        onPress: async () => {
+          await clearLocalCache(true);
+          setNotice("Local SQLite cache cleared.");
+          if (isOnline) {
+            await triggerSync();
+          }
+        },
+      },
+    ]);
+  };
 
   const connectCalendar = async () => {
     try {
@@ -73,7 +164,7 @@ export default function SettingsScreen() {
   };
 
   const syncNow = async () => {
-    setSyncing(true);
+    setSyncingCal(true);
     try {
       await api.post("/calendar/sync");
       await load();
@@ -81,7 +172,7 @@ export default function SettingsScreen() {
     } catch (e) {
       setError(errorMessage(e));
     } finally {
-      setSyncing(false);
+      setSyncingCal(false);
     }
   };
 
@@ -104,12 +195,12 @@ export default function SettingsScreen() {
   };
 
   const submitFeedback = async () => {
-    if (!message.trim() || submitting) return;
+    if (!message.trim() || submitting || !user) return;
     setSubmitting(true);
     setError(null);
     setNotice(null);
     try {
-      await api.post("/feedback", {
+      const { queuedOffline } = await submitFeedbackOfflineFirst(user.id, {
         category,
         rating: rating > 0 ? rating : undefined,
         title: title.trim() || undefined,
@@ -117,7 +208,11 @@ export default function SettingsScreen() {
         pageUrl: "/settings",
         extraData: { platform: "android", includeSpecs: true },
       });
-      setNotice("Thank you for your feedback! Your submission has been saved.");
+      setNotice(
+        queuedOffline
+          ? "You're offline — feedback saved on your phone and will send automatically once reconnected."
+          : "Thank you for your feedback! Your submission has been saved."
+      );
       setTitle("");
       setMessage("");
       setRating(0);
@@ -129,7 +224,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <Screen title="Settings" subtitle="Account, integrations and feedback.">
+    <Screen title="Settings" subtitle="Account, security, offline sync and feedback.">
       <ScrollView
         contentContainerStyle={s.content}
         refreshControl={
@@ -170,6 +265,158 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </Card>
 
+        <SectionLabel>SECURITY & BIOMETRICS</SectionLabel>
+        <Card style={{ gap: 14 }}>
+          <View style={s.integrationRow}>
+            <View
+              style={[
+                s.integrationIcon,
+                {
+                  backgroundColor: biometricSettings.enabled
+                    ? colors.greenLight
+                    : colors.slate100,
+                },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={biometricCapability.icon}
+                size={22}
+                color={biometricSettings.enabled ? colors.green : colors.slate500}
+              />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text weight="bold" style={s.integrationTitle}>
+                {biometricCapability.label} Login
+              </Text>
+              <Text style={s.integrationSub}>
+                {!biometricCapability.hasHardware
+                  ? "Biometric hardware not detected on this device"
+                  : !biometricCapability.isEnrolled
+                    ? `Set up ${biometricCapability.label.toLowerCase()} in phone Settings first`
+                    : biometricSettings.enabled
+                      ? "Active · sign in and unlock with biometrics"
+                      : `Use ${biometricCapability.label} to sign in quickly`}
+              </Text>
+            </View>
+            <Switch
+              value={biometricSettings.enabled}
+              onValueChange={toggleBiometricLogin}
+              disabled={!biometricCapability.available || bioBusy}
+              trackColor={{ true: colors.green, false: colors.slate200 }}
+              thumbColor={colors.white}
+            />
+          </View>
+
+          {biometricSettings.enabled && biometricCapability.available ? (
+            <>
+              <Divider />
+              <View style={s.integrationRow}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text weight="semibold" style={s.subToggleTitle}>
+                    Lock App on Launch
+                  </Text>
+                  <Text style={s.integrationSub}>
+                    Require {biometricCapability.label} when opening or returning to Bloom
+                  </Text>
+                </View>
+                <Switch
+                  value={biometricSettings.requireOnLaunch}
+                  onValueChange={toggleRequireOnLaunch}
+                  trackColor={{ true: colors.green, false: colors.slate200 }}
+                  thumbColor={colors.white}
+                />
+              </View>
+            </>
+          ) : null}
+        </Card>
+
+        <SectionLabel>OFFLINE STORAGE & SYNC</SectionLabel>
+        <Card style={{ gap: 14 }}>
+          <View style={s.integrationRow}>
+            <View
+              style={[
+                s.integrationIcon,
+                {
+                  backgroundColor: isOnline ? colors.greenLight : colors.warningBg,
+                },
+              ]}
+            >
+              <Feather
+                name={isOnline ? "database" : "wifi-off"}
+                size={20}
+                color={isOnline ? colors.green : colors.warning}
+              />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text weight="bold" style={s.integrationTitle}>
+                {isSyncing
+                  ? "Syncing with Server..."
+                  : isOnline
+                    ? "On-Device SQLite · Online"
+                    : "On-Device SQLite · Offline"}
+              </Text>
+              <Text style={s.integrationSub}>
+                {lastSyncedAt
+                  ? `Last synced ${formatDistanceToNow(new Date(lastSyncedAt), { addSuffix: true })}`
+                  : "Waiting for first sync"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={s.statsGrid}>
+            <View style={s.statCell}>
+              <Text weight="black" style={s.statNum}>{summary.tasks}</Text>
+              <Text weight="bold" style={s.statLabel}>TASKS</Text>
+            </View>
+            <View style={s.statCell}>
+              <Text weight="black" style={s.statNum}>{summary.habits}</Text>
+              <Text weight="bold" style={s.statLabel}>HABITS</Text>
+            </View>
+            <View style={s.statCell}>
+              <Text weight="black" style={s.statNum}>{summary.events}</Text>
+              <Text weight="bold" style={s.statLabel}>EVENTS</Text>
+            </View>
+            <View
+              style={[
+                s.statCell,
+                pendingCount > 0 && { backgroundColor: colors.warningBg, borderColor: "#fed7aa" },
+              ]}
+            >
+              <Text
+                weight="black"
+                style={[s.statNum, pendingCount > 0 && { color: colors.warning }]}
+              >
+                {pendingCount}
+              </Text>
+              <Text
+                weight="bold"
+                style={[s.statLabel, pendingCount > 0 && { color: "#9a3412" }]}
+              >
+                QUEUED
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 9 }}>
+            <Button
+              label={isSyncing ? "Syncing..." : "Sync Now"}
+              small
+              onPress={handleManualSync}
+              busy={isSyncing}
+              disabled={!isOnline}
+              icon={<Feather name="refresh-cw" size={14} color={colors.white} />}
+              style={{ flex: 1 }}
+            />
+            <Button
+              label="Clear Cache"
+              small
+              variant="outline"
+              onPress={handleClearCache}
+              style={{ flex: 1 }}
+            />
+          </View>
+        </Card>
+
         <SectionLabel>CONNECTED ACCOUNTS</SectionLabel>
         <Card style={{ gap: 14 }}>
           <View style={s.integrationRow}>
@@ -201,7 +448,7 @@ export default function SettingsScreen() {
                 label="Sync Now"
                 small
                 onPress={syncNow}
-                busy={syncing}
+                busy={syncingCal}
                 icon={<Feather name="refresh-cw" size={14} color={colors.white} />}
                 style={{ flex: 1 }}
               />
@@ -279,7 +526,7 @@ export default function SettingsScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text weight="bold" style={s.integrationTitle}>Bloom Productivity</Text>
-            <Text style={s.integrationSub}>Version 1.0.0 · Android Edition</Text>
+            <Text style={s.integrationSub}>Version 1.0.0 · Offline-Ready Mobile Edition</Text>
           </View>
         </Card>
       </ScrollView>
@@ -332,7 +579,21 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   integrationTitle: { fontSize: 15, color: colors.text },
+  subToggleTitle: { fontSize: 14, color: colors.text },
   integrationSub: { fontSize: 12, color: colors.subtle, marginTop: 2 },
+  statsGrid: { flexDirection: "row", gap: 8 },
+  statCell: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statNum: { fontSize: 16, color: colors.text },
+  statLabel: { fontSize: 8, color: colors.subtle, letterSpacing: 0.7, marginTop: 2 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   aboutCard: { flexDirection: "row", alignItems: "center", gap: 12 },
   aboutLogo: {

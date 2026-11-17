@@ -13,7 +13,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { api, errorMessage } from "../api/client";
+import { errorMessage } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import {
+  createEventOfflineFirst,
+  deleteEventOfflineFirst,
+  updateEventOfflineFirst,
+} from "../offline/offlineApi";
 import { AppEvent } from "../types";
 import { colors, radii, shadow } from "../theme";
 import { Button, ErrorBanner, Input, Label, Text } from "../ui";
@@ -33,6 +39,7 @@ export default function EventModal({
   onSaved: (event: AppEvent, created: boolean) => void;
   onDeleted?: (id: string) => void;
 }) {
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -66,7 +73,7 @@ export default function EventModal({
   }, [visible, event, date]);
 
   const save = async () => {
-    if (!title.trim() || busy) return;
+    if (!title.trim() || busy || !user) return;
     setBusy(true);
     setError(null);
     const startISO = allDay
@@ -86,10 +93,10 @@ export default function EventModal({
       allDay,
     };
     try {
-      const saved = event
-        ? await api.patch<AppEvent>(`/events/${event.id}`, payload)
-        : await api.post<AppEvent>("/events", payload);
-      onSaved(saved, !event);
+      const result = event
+        ? await updateEventOfflineFirst(user.id, event, payload)
+        : await createEventOfflineFirst(user.id, payload);
+      onSaved(result.event, !event);
       onClose();
     } catch (e) {
       setError(errorMessage(e));
@@ -99,7 +106,7 @@ export default function EventModal({
   };
 
   const remove = () => {
-    if (!event) return;
+    if (!event || !user) return;
     Alert.alert("Delete event?", event.title, [
       { text: "Cancel", style: "cancel" },
       {
@@ -107,7 +114,7 @@ export default function EventModal({
         style: "destructive",
         onPress: async () => {
           try {
-            await api.del(`/events/${event.id}`);
+            await deleteEventOfflineFirst(user.id, event.id);
             onDeleted?.(event.id);
             onClose();
           } catch (e) {

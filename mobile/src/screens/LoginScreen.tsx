@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,21 +12,60 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../auth/AuthContext";
 import { mobileApi, errorMessage } from "../api/client";
 import { colors, radii, shadow } from "../theme";
-import { Button, ErrorBanner, Input, Label, Text } from "../ui";
+import { Avatar, Button, ErrorBanner, Input, Label, Text } from "../ui";
 
 type Mode = "login" | "register" | "forgot";
 
 export default function LoginScreen() {
-  const { login, register } = useAuth();
+  const {
+    login,
+    register,
+    loginWithBiometrics,
+    forgetBiometricAccount,
+    biometricCapability,
+    biometricSettings,
+  } = useAuth();
+
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const canBiometricSignIn =
+    mode === "login" &&
+    biometricCapability.available &&
+    biometricSettings.enabled &&
+    biometricSettings.hasVaultToken &&
+    Boolean(biometricSettings.savedUser);
+
+  useEffect(() => {
+    if (biometricSettings.savedUser?.email && !email) {
+      setEmail(biometricSettings.savedUser.email);
+    }
+  }, [biometricSettings.savedUser, email]);
+
   const isLogin = mode === "login";
+
+  const handleBiometricLogin = async () => {
+    if (bioBusy || busy) return;
+    setError(null);
+    setNotice(null);
+    setBioBusy(true);
+    try {
+      const res = await loginWithBiometrics();
+      if (!res.ok && !res.cancelled && res.error) {
+        setError(res.error);
+      }
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBioBusy(false);
+    }
+  };
 
   const submit = async () => {
     setError(null);
@@ -89,6 +128,49 @@ export default function LoginScreen() {
           </View>
 
           <View style={s.card}>
+            {canBiometricSignIn && biometricSettings.savedUser ? (
+              <View style={s.bioBox}>
+                <View style={s.bioUserRow}>
+                  <Avatar name={biometricSettings.savedUser.displayName} size={38} />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text weight="bold" numberOfLines={1} style={s.bioName}>
+                      {biometricSettings.savedUser.displayName}
+                    </Text>
+                    <Text numberOfLines={1} style={s.bioEmail}>
+                      {biometricSettings.savedUser.email}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={forgetBiometricAccount} hitSlop={8}>
+                    <Text weight="semibold" style={s.bioForget}>
+                      Forget
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Button
+                  label={`Sign in with ${biometricCapability.label}`}
+                  variant="secondary"
+                  onPress={handleBiometricLogin}
+                  busy={bioBusy}
+                  icon={
+                    <MaterialCommunityIcons
+                      name={biometricCapability.icon}
+                      size={18}
+                      color={colors.darkGreen}
+                    />
+                  }
+                />
+
+                <View style={s.orRow}>
+                  <View style={s.orLine} />
+                  <Text weight="semibold" style={s.orText}>
+                    OR USE PASSWORD
+                  </Text>
+                  <View style={s.orLine} />
+                </View>
+              </View>
+            ) : null}
+
             {notice ? (
               <View style={s.notice}>
                 <Feather name="check-circle" size={16} color={colors.green} />
@@ -147,7 +229,15 @@ export default function LoginScreen() {
               ) : null}
 
               <Button
-                label={mode === "forgot" ? (busy ? "Sending..." : "Send Reset Link") : isLogin ? "Sign In" : "Get Started"}
+                label={
+                  mode === "forgot"
+                    ? busy
+                      ? "Sending..."
+                      : "Send Reset Link"
+                    : isLogin
+                      ? "Sign In"
+                      : "Get Started"
+                }
                 onPress={submit}
                 busy={busy}
                 disabled={mode === "forgot" ? !email.trim() : !email.trim() || !password}
@@ -207,6 +297,23 @@ const s = StyleSheet.create({
     shadowRadius: 24,
     elevation: 4,
   },
+  bioBox: { gap: 12, marginBottom: 14 },
+  bioUserRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.bg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 10,
+  },
+  bioName: { fontSize: 14, color: colors.text },
+  bioEmail: { fontSize: 11, color: colors.subtle },
+  bioForget: { fontSize: 12, color: colors.subtle, paddingHorizontal: 4 },
+  orRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 2 },
+  orLine: { flex: 1, height: 1, backgroundColor: colors.slate200 },
+  orText: { fontSize: 10, color: colors.subtle, letterSpacing: 1 },
   notice: {
     backgroundColor: colors.greenLight,
     borderColor: colors.greenSoft,

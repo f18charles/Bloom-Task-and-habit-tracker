@@ -9,8 +9,17 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { api, errorMessage } from "../api/client";
-import { Habit, HabitLog } from "../types";
+import { errorMessage } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import { useOnDataSynced } from "../offline/SyncContext";
+import { getCachedHabits } from "../offline/localDb";
+import {
+  createHabitOfflineFirst,
+  deleteHabitOfflineFirst,
+  fetchHabitsOfflineFirst,
+  logHabitOfflineFirst,
+} from "../offline/offlineApi";
+import { Habit } from "../types";
 import { colors, radii, shadow } from "../theme";
 import { loggedToday } from "../utils";
 import {
@@ -26,6 +35,7 @@ import {
 } from "../ui";
 
 export default function HabitsScreen() {
+  const { user } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,26 +46,42 @@ export default function HabitsScreen() {
   const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      const list = await api.get<Habit[]>("/habits");
-      setHabits(list.map((h) => ({ ...h, logs: h.logs ?? [] })));
+      const cached = await getCachedHabits(user.id);
+      if (cached.length > 0) {
+        setHabits(cached);
+        setLoading(false);
+      }
+      const res = await fetchHabitsOfflineFirst(user.id);
+      setHabits(res.items);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const reloadFromCache = useCallback(async () => {
+    if (!user) return;
+    setHabits(await getCachedHabits(user.id));
+  }, [user]);
+
+  useOnDataSynced(reloadFromCache);
+
   const add = async () => {
-    if (!title.trim()) return;
+    if (!title.trim() || !user) return;
     setAdding(true);
     try {
-      const created = await api.post<Habit>("/habits", { title: title.trim(), frequency });
-      setHabits((prev) => [{ ...created, logs: created.logs ?? [] }, ...prev]);
+      const { habit } = await createHabitOfflineFirst(user.id, {
+        title: title.trim(),
+        frequency,
+      });
+      setHabits((prev) => [habit, ...prev]);
       setTitle("");
       setShowAdd(false);
     } catch (e) {
@@ -66,18 +92,19 @@ export default function HabitsScreen() {
   };
 
   const log = async (habit: Habit) => {
+    if (!user) return;
     try {
-      const entry = await api.post<HabitLog>(`/habits/${habit.id}/log`);
+      const { entry } = await logHabitOfflineFirst(user.id, habit);
       setHabits((prev) =>
         prev.map((h) => (h.id === habit.id ? { ...h, logs: [...(h.logs ?? []), entry] } : h))
       );
     } catch (e) {
-      if (errorMessage(e).includes("Already logged")) load();
-      else setError(errorMessage(e));
+      setError(errorMessage(e));
     }
   };
 
   const remove = (habit: Habit) => {
+    if (!user) return;
     Alert.alert("Delete habit?", habit.title, [
       { text: "Cancel", style: "cancel" },
       {
@@ -86,7 +113,7 @@ export default function HabitsScreen() {
         onPress: async () => {
           setHabits((prev) => prev.filter((h) => h.id !== habit.id));
           try {
-            await api.del(`/habits/${habit.id}`);
+            await deleteHabitOfflineFirst(user.id, habit.id);
           } catch (e) {
             setError(errorMessage(e));
             load();

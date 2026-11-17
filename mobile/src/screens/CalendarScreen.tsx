@@ -21,7 +21,11 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import { api, errorMessage } from "../api/client";
+import { errorMessage } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import { useOnDataSynced } from "../offline/SyncContext";
+import { getCachedEvents, getCachedTasks } from "../offline/localDb";
+import { fetchEventsOfflineFirst, fetchTasksOfflineFirst } from "../offline/offlineApi";
 import { AppEvent, Task } from "../types";
 import { colors, radii, shadow } from "../theme";
 import {
@@ -39,6 +43,7 @@ import EventModal from "../components/EventModal";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function CalendarScreen() {
+  const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<AppEvent[]>([]);
@@ -50,23 +55,46 @@ export default function CalendarScreen() {
   const [editingEvent, setEditingEvent] = useState<AppEvent | null>(null);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      const [nextEvents, nextTasks] = await Promise.all([
-        api.get<AppEvent[]>("/events"),
-        api.get<Task[]>("/tasks"),
+      const [cachedEvents, cachedTasks] = await Promise.all([
+        getCachedEvents(user.id),
+        getCachedTasks(user.id),
       ]);
-      setEvents(nextEvents);
-      setTasks(nextTasks);
+      if (cachedEvents.length > 0 || cachedTasks.length > 0) {
+        setEvents(cachedEvents);
+        setTasks(cachedTasks);
+        setLoading(false);
+      }
+
+      const [nextEvents, nextTasks] = await Promise.all([
+        fetchEventsOfflineFirst(user.id),
+        fetchTasksOfflineFirst(user.id),
+      ]);
+      setEvents(nextEvents.items);
+      setTasks(nextTasks.items);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const reloadFromCache = useCallback(async () => {
+    if (!user) return;
+    const [cachedEvents, cachedTasks] = await Promise.all([
+      getCachedEvents(user.id),
+      getCachedTasks(user.id),
+    ]);
+    setEvents(cachedEvents);
+    setTasks(cachedTasks);
+  }, [user]);
+
+  useOnDataSynced(reloadFromCache);
 
   const days = useMemo(
     () =>

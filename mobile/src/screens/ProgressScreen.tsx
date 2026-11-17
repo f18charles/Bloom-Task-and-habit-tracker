@@ -9,7 +9,11 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Svg, { Circle, Line, Polyline, Text as SvgText } from "react-native-svg";
-import { api, errorMessage } from "../api/client";
+import { errorMessage } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import { useOnDataSynced } from "../offline/SyncContext";
+import { computeLocalStats, getCachedStats } from "../offline/localDb";
+import { fetchStatsOfflineFirst } from "../offline/offlineApi";
 import { StatsDay, UserStats } from "../types";
 import { colors, fonts } from "../theme";
 import { Card, ErrorBanner, Screen, Text } from "../ui";
@@ -18,6 +22,7 @@ const CHART_HEIGHT = 158;
 const LINE_COLOR = "#86efac";
 
 export default function ProgressScreen() {
+  const { user } = useAuth();
   const { width } = useWindowDimensions();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,18 +30,32 @@ export default function ProgressScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      setStats(await api.get<UserStats>("/users/stats"));
+      const cached = await getCachedStats(user.id);
+      if (cached) {
+        setStats(cached);
+        setLoading(false);
+      }
+      const res = await fetchStatsOfflineFirst(user.id);
+      setStats(res.stats);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const reloadFromCache = useCallback(async () => {
+    if (!user) return;
+    setStats((await getCachedStats(user.id)) ?? (await computeLocalStats(user.id)));
+  }, [user]);
+
+  useOnDataSynced(reloadFromCache);
 
   const chartWidth = Math.max(180, width - 76);
   const taskData = stats?.taskHistory ?? [];

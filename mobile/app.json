@@ -11,6 +11,14 @@
     ],
     "plugins": [
       "expo-secure-store",
+      "expo-sqlite",
+      "expo-background-task",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Bloom to use Face ID to securely unlock and sign in to your workspace."
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -23,13 +31,20 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bloom.productivity"
+      "bundleIdentifier": "com.bloom.productivity",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Allow Bloom to use Face ID to securely unlock and sign in to your workspace."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#10B981"
       },
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ],
       "package": "com.bloom.productivity"
     },
     "web": {

@@ -14,7 +14,10 @@ import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "./src/auth/AuthContext";
+import { SyncProvider } from "./src/offline/SyncContext";
+import "./src/offline/syncWorker";
 import LoginScreen from "./src/screens/LoginScreen";
+import LockScreen from "./src/screens/LockScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
 import BoardScreen from "./src/screens/BoardScreen";
 import CalendarScreen from "./src/screens/CalendarScreen";
@@ -94,7 +97,7 @@ function BloomTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 function Root() {
-  const { user, loading } = useAuth();
+  const { user, loading, locked } = useAuth();
 
   if (loading) {
     return (
@@ -106,6 +109,7 @@ function Root() {
   }
 
   if (!user) return <LoginScreen />;
+  if (locked) return <LockScreen />;
 
   return (
     <NavigationContainer theme={theme}>
@@ -146,8 +150,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="dark" />
-        <Root />
+        <SyncProvider>
+          <StatusBar style="dark" />
+          <Root />
+        </SyncProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

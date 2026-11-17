@@ -16,6 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, FontWeight, fonts, priority, radii, shadow, statusMeta } from "./theme";
 import { Priority, Status } from "./types";
+import SyncStatusBanner from "./components/SyncStatusBanner";
 
 export function Text({
   weight = "regular",
@@ -54,6 +55,7 @@ export function Screen({
         </View>
         {right ? <View style={{ marginLeft: 10 }}>{right}</View> : null}
       </View>
+      <SyncStatusBanner />
       {children}
     </SafeAreaView>
   );

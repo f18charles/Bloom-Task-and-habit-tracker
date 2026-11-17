@@ -10,9 +10,16 @@ import {
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { formatDistanceToNow, isPast } from "date-fns";
-import { api, errorMessage } from "../api/client";
+import { errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import { Habit, HabitLog, Priority, Task } from "../types";
+import { useOnDataSynced } from "../offline/SyncContext";
+import {
+  fetchHabitsOfflineFirst,
+  fetchTasksOfflineFirst,
+  logHabitOfflineFirst,
+} from "../offline/offlineApi";
+import { getCachedHabits, getCachedTasks } from "../offline/localDb";
+import { Habit, Priority, Task } from "../types";
 import { colors, radii, shadow } from "../theme";
 import { loggedToday } from "../utils";
 import {
@@ -50,23 +57,46 @@ export default function DashboardScreen() {
   const [editing, setEditing] = useState<Task | null>(null);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      const [nextTasks, nextHabits] = await Promise.all([
-        api.get<Task[]>("/tasks"),
-        api.get<Habit[]>("/habits"),
+      const [cachedTasks, cachedHabits] = await Promise.all([
+        getCachedTasks(user.id),
+        getCachedHabits(user.id),
       ]);
-      setTasks(nextTasks);
-      setHabits(nextHabits.map((h) => ({ ...h, logs: h.logs ?? [] })));
+      if (cachedTasks.length > 0 || cachedHabits.length > 0) {
+        setTasks(cachedTasks);
+        setHabits(cachedHabits);
+        setLoading(false);
+      }
+
+      const [nextTasks, nextHabits] = await Promise.all([
+        fetchTasksOfflineFirst(user.id),
+        fetchHabitsOfflineFirst(user.id),
+      ]);
+      setTasks(nextTasks.items);
+      setHabits(nextHabits.items);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const reloadFromCache = useCallback(async () => {
+    if (!user) return;
+    const [cachedTasks, cachedHabits] = await Promise.all([
+      getCachedTasks(user.id),
+      getCachedHabits(user.id),
+    ]);
+    setTasks(cachedTasks);
+    setHabits(cachedHabits);
+  }, [user]);
+
+  useOnDataSynced(reloadFromCache);
 
   const pendingTasks = tasks.filter((t) => t.status !== "DONE");
   const pendingHabits = habits.filter((h) => !loggedToday(h));
@@ -86,14 +116,14 @@ export default function DashboardScreen() {
   );
 
   const logHabit = async (habit: Habit) => {
+    if (!user) return;
     try {
-      const entry = await api.post<HabitLog>(`/habits/${habit.id}/log`);
+      const { entry } = await logHabitOfflineFirst(user.id, habit);
       setHabits((prev) =>
         prev.map((h) => (h.id === habit.id ? { ...h, logs: [...(h.logs ?? []), entry] } : h))
       );
     } catch (e) {
-      if (errorMessage(e).includes("Already logged")) load();
-      else setError(errorMessage(e));
+      setError(errorMessage(e));
     }
   };
 

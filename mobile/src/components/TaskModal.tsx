@@ -12,7 +12,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { api, errorMessage } from "../api/client";
+import { errorMessage } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import {
+  createTaskOfflineFirst,
+  deleteTaskOfflineFirst,
+  updateTaskOfflineFirst,
+} from "../offline/offlineApi";
 import { Priority, Status, Task } from "../types";
 import { colors, priority as priorityColors, radii, shadow } from "../theme";
 import { Button, Chip, ErrorBanner, Input, Label, Text } from "../ui";
@@ -39,6 +45,7 @@ export default function TaskModal({
   onSaved: (task: Task, created: boolean) => void;
   onDeleted?: (id: string) => void;
 }) {
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -60,7 +67,7 @@ export default function TaskModal({
   }, [visible, task, defaultStatus]);
 
   const save = async () => {
-    if (!title.trim() || busy) return;
+    if (!title.trim() || busy || !user) return;
     setBusy(true);
     setError(null);
     const payload = {
@@ -71,10 +78,10 @@ export default function TaskModal({
       dueDate: dueDate.trim() || undefined,
     };
     try {
-      const saved = task
-        ? await api.put<Task>(`/tasks/${task.id}`, payload)
-        : await api.post<Task>("/tasks", payload);
-      onSaved(saved, !task);
+      const result = task
+        ? await updateTaskOfflineFirst(user.id, task, payload)
+        : await createTaskOfflineFirst(user.id, payload);
+      onSaved(result.task, !task);
       onClose();
     } catch (e) {
       setError(errorMessage(e));
@@ -84,7 +91,7 @@ export default function TaskModal({
   };
 
   const remove = () => {
-    if (!task) return;
+    if (!task || !user) return;
     Alert.alert("Delete task?", task.title, [
       { text: "Cancel", style: "cancel" },
       {
@@ -92,7 +99,7 @@ export default function TaskModal({
         style: "destructive",
         onPress: async () => {
           try {
-            await api.del(`/tasks/${task.id}`);
+            await deleteTaskOfflineFirst(user.id, task.id);
             onDeleted?.(task.id);
             onClose();
           } catch (e) {

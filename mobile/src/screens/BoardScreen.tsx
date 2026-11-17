@@ -12,7 +12,15 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { formatDistanceToNow, isPast } from "date-fns";
-import { api, errorMessage } from "../api/client";
+import { errorMessage } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import { useOnDataSynced } from "../offline/SyncContext";
+import { getCachedTasks } from "../offline/localDb";
+import {
+  deleteTaskOfflineFirst,
+  fetchTasksOfflineFirst,
+  updateTaskOfflineFirst,
+} from "../offline/offlineApi";
 import { Priority, Status, Task } from "../types";
 import { colors, radii, shadow } from "../theme";
 import {
@@ -47,6 +55,7 @@ const SORTS: { label: string; value: "NEWEST" | "OLDEST" | "DUE_DATE" }[] = [
 ];
 
 export default function BoardScreen() {
+  const { user } = useAuth();
   const { width } = useWindowDimensions();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,18 +69,32 @@ export default function BoardScreen() {
   const [defaultStatus, setDefaultStatus] = useState<Status>("TODO");
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      setTasks(await api.get<Task[]>("/tasks"));
+      const cached = await getCachedTasks(user.id);
+      if (cached.length > 0) {
+        setTasks(cached);
+        setLoading(false);
+      }
+      const res = await fetchTasksOfflineFirst(user.id);
+      setTasks(res.items);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const reloadFromCache = useCallback(async () => {
+    if (!user) return;
+    setTasks(await getCachedTasks(user.id));
+  }, [user]);
+
+  useOnDataSynced(reloadFromCache);
 
   const filtered = useMemo(() => {
     const list = tasks.filter((t) => priorityFilter === "ALL" || t.priority === priorityFilter);
@@ -96,9 +119,10 @@ export default function BoardScreen() {
   };
 
   const updateStatus = async (task: Task, status: Status) => {
+    if (!user) return;
     setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status } : t)));
     try {
-      const updated = await api.put<Task>(`/tasks/${task.id}`, { status });
+      const { task: updated } = await updateTaskOfflineFirst(user.id, task, { status });
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
     } catch (e) {
       setError(errorMessage(e));
@@ -107,6 +131,7 @@ export default function BoardScreen() {
   };
 
   const remove = (task: Task) => {
+    if (!user) return;
     Alert.alert("Delete task?", task.title, [
       { text: "Cancel", style: "cancel" },
       {
@@ -115,7 +140,7 @@ export default function BoardScreen() {
         onPress: async () => {
           setTasks((prev) => prev.filter((t) => t.id !== task.id));
           try {
-            await api.del(`/tasks/${task.id}`);
+            await deleteTaskOfflineFirst(user.id, task.id);
           } catch (e) {
             setError(errorMessage(e));
             load();
