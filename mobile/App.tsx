@@ -1,189 +1,192 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { mobileApi, API_BASE_URL } from './src/api/client';
+import React from "react";
+import { ActivityIndicator, StyleSheet, Text as RNText, TouchableOpacity, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
+import {
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+} from "@expo-google-fonts/outfit";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { AuthProvider, useAuth } from "./src/auth/AuthContext";
+import LoginScreen from "./src/screens/LoginScreen";
+import DashboardScreen from "./src/screens/DashboardScreen";
+import BoardScreen from "./src/screens/BoardScreen";
+import CalendarScreen from "./src/screens/CalendarScreen";
+import HabitsScreen from "./src/screens/HabitsScreen";
+import ProgressScreen from "./src/screens/ProgressScreen";
+import SettingsScreen from "./src/screens/SettingsScreen";
+import { colors } from "./src/theme";
+import { Text } from "./src/ui";
 
-export default function App() {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tasks' | 'habits'>('dashboard');
+const Tab = createBottomTabNavigator();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+const TAB_META: Record<string, { icon: keyof typeof Feather.glyphMap; label: string }> = {
+  Dashboard: { icon: "home", label: "Dashboard" },
+  Board: { icon: "columns", label: "Board" },
+  Calendar: { icon: "calendar", label: "Calendar" },
+  Habits: { icon: "check-circle", label: "Habits" },
+  Progress: { icon: "bar-chart-2", label: "Progress" },
+  Settings: { icon: "settings", label: "Settings" },
+};
 
-  const checkAuth = async () => {
-    try {
-      const token = await AsyncStorage.getItem('bloom_token');
-      if (token) {
-        const res = await mobileApi.get('/auth/me');
-        setUser(res.data.user);
-        fetchTasks();
-      }
-    } catch (err) {
-      console.log('Auth check error', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: colors.bg,
+    card: colors.card,
+    text: colors.text,
+    border: colors.border,
+    primary: colors.primary,
+  },
+};
 
-  const fetchTasks = async () => {
-    try {
-      const res = await mobileApi.get('/tasks');
-      setTasks(res.data);
-    } catch (err) {
-      console.log('Tasks error', err);
-    }
-  };
+function BloomTabBar({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[s.tabBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      {state.routes.map((route, index) => {
+        const focused = state.index === index;
+        const meta = TAB_META[route.name] ?? { icon: "circle" as const, label: route.name };
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!focused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityState={focused ? { selected: true } : {}}
+            style={[s.tabItem, focused && s.tabItemActive]}
+          >
+            {focused ? <View style={s.tabDot} /> : null}
+            <Feather
+              name={meta.icon}
+              size={18}
+              color={focused ? colors.primary : colors.slate500}
+            />
+            <Text
+              weight={focused ? "bold" : "semibold"}
+              numberOfLines={1}
+              style={[s.tabLabel, focused && { color: colors.primary }]}
+            >
+              {meta.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function Root() {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#FF85A1" />
-        <Text style={styles.loadingText}>Loading Bloom for Android...</Text>
+      <View style={s.boot}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ color: colors.muted, marginTop: 12 }}>Loading Bloom...</Text>
+      </View>
+    );
+  }
+
+  if (!user) return <LoginScreen />;
+
+  return (
+    <NavigationContainer theme={theme}>
+      <Tab.Navigator
+        tabBar={(props) => <BloomTabBar {...props} />}
+        screenOptions={{ headerShown: false, lazy: true }}
+      >
+        <Tab.Screen name="Dashboard" component={DashboardScreen} />
+        <Tab.Screen name="Board" component={BoardScreen} />
+        <Tab.Screen name="Calendar" component={CalendarScreen} />
+        <Tab.Screen name="Habits" component={HabitsScreen} />
+        <Tab.Screen name="Progress" component={ProgressScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
+    Outfit_800ExtraBold,
+  });
+
+  if (!fontsLoaded && !fontError) {
+    return (
+      <View style={[s.boot, { backgroundColor: colors.primaryLight }]}>
+        <MaterialCommunityIcons name="flower" size={42} color={colors.green} />
+        <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 16 }} />
+        <RNText style={{ marginTop: 12, color: colors.slate500 }}>Bloom</RNText>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Native App Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>🌸 Bloom Mobile</Text>
-        <Text style={styles.headerSubtitle}>Native Android Productivity</Text>
-      </View>
-
-      {/* Main Content Area */}
-      <ScrollView style={styles.content}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Android Native App Active</Text>
-          <Text style={styles.cardDesc}>
-            Connected directly to backend server at:
-          </Text>
-          <Text style={styles.urlText}>{API_BASE_URL}</Text>
-        </View>
-
-        {user ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Welcome back, {user.displayName}!</Text>
-            <Text style={styles.cardDesc}>User Email: {user.email}</Text>
-            <Text style={styles.cardDesc}>Tasks count: {tasks.length}</Text>
-          </View>
-        ) : (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Account Authentication</Text>
-            <Text style={styles.cardDesc}>
-              Log in with your existing Bloom credentials to synchronize your tasks, habits, and Google Calendar.
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-
-      {/* Navigation Bar */}
-      <View style={styles.navBar}>
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'dashboard' && styles.navItemActive]}
-          onPress={() => setActiveTab('dashboard')}
-        >
-          <Text style={styles.navText}>Dashboard</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'tasks' && styles.navItemActive]}
-          onPress={() => setActiveTab('tasks')}
-        >
-          <Text style={styles.navText}>Tasks</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'habits' && styles.navItemActive]}
-          onPress={() => setActiveTab('habits')}
-        >
-          <Text style={styles.navText}>Habits</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="dark" />
+        <Root />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF5F7',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF5F7',
-  },
-  loadingText: {
-    marginTop: 12,
-    color: '#FF85A1',
-    fontWeight: 'bold',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFE3E8',
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#2D3748',
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#A0AEC0',
-    marginTop: 2,
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#FFE3E8',
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2D3748',
-    marginBottom: 6,
-  },
-  cardDesc: {
-    fontSize: 13,
-    color: '#718096',
-    lineHeight: 18,
-  },
-  urlText: {
-    fontSize: 11,
-    color: '#FF85A1',
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  navBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+const s = StyleSheet.create({
+  boot: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg },
+  tabBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.card,
     borderTopWidth: 1,
-    borderTopColor: '#FFE3E8',
-    paddingVertical: 12,
+    borderTopColor: colors.border,
+    paddingTop: 6,
+    paddingHorizontal: 4,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 12,
   },
-  navItem: {
+  tabItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+    paddingVertical: 4,
+    paddingHorizontal: 1,
+    borderRadius: 12,
+    minHeight: 46,
   },
-  navItemActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#FF85A1',
+  tabItemActive: { backgroundColor: colors.primarySoft },
+  tabDot: {
+    position: "absolute",
+    top: 0,
+    width: 16,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
   },
-  navText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#4A5568',
-  },
+  tabLabel: { fontSize: 9, color: colors.slate500, letterSpacing: -0.1 },
 });
